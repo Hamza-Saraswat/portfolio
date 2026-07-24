@@ -258,10 +258,15 @@
     to   { background-position: 0% 50%; }
   }
 
-  /* ---- Hero entrance choreography (CSS only, no JS) ---- */
+  /* ---- Hero entrance choreography (CSS only, no JS) ----
+     `backwards` rather than an explicit `opacity: 0` plus `forwards`.
+     The hidden state then lives only in the keyframes, so it applies
+     during the delay and nowhere else. An element whose animation never
+     runs — animations disabled, a renderer that skips them — still paints
+     at its natural opacity instead of staying invisible forever. This is
+     the front page, so it must not depend on an animation finishing. */
   .hero-seq {
-    opacity: 0;
-    animation: rise-in 0.6s var(--ease-out-expo) forwards;
+    animation: rise-in 0.6s var(--ease-out-expo) backwards;
   }
   .hero-seq-1 { animation-delay: 0ms; }
   .hero-seq-2 { animation-delay: 80ms; }
@@ -269,13 +274,11 @@
   .hero-seq-4 { animation-delay: 240ms; }
 
   .hero-card {
-    opacity: 0;
-    animation: card-in 0.7s var(--ease-out-expo) 200ms forwards;
+    animation: card-in 0.7s var(--ease-out-expo) 200ms backwards;
   }
 
   .hero-halo {
-    opacity: 0;
-    animation: halo-in 0.9s ease-out 500ms forwards;
+    animation: halo-in 0.9s ease-out 500ms backwards;
   }
 
   /* One-time sweep across the gradient headline span. */
