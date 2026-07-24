@@ -8,9 +8,9 @@ import SectionHeading from '../components/SectionHeading.astro';
 import StatsBar from '../components/StatsBar.astro';
 import ScrollPinnedSection from '../components/ScrollPinnedSection.astro';
 
-import emailAgentPipeline from '../assets/diagrams/email-agent-pipeline.png';
-import relayArchitecture from '../assets/diagrams/relay-architecture.png';
-import jujuArchitecture from '../assets/diagrams/juju-architecture.png';
+import supportInboxPipeline from '../assets/diagrams/support-inbox-pipeline.png';
+import statusPagesArchitecture from '../assets/diagrams/status-pages-architecture.png';
+import assistantArchitecture from '../assets/diagrams/knowledge-assistant-architecture.png';
 import onboardingOrchestrator from '../assets/diagrams/onboarding-orchestrator.png';
 
 const caseStudies = (await getCollection('caseStudies', ({ data }) => !data.draft)).sort(
@@ -26,28 +26,28 @@ const capabilities = [
     title: 'Eval-driven development',
     body: "Every system I ship has a way of telling me when it gets worse. Braintrust suites, golden-fixture harnesses, adversarial gate tests that have to fail on purpose, and one month where I graded 422 answers by hand.",
     tags: ['Braintrust', 'Golden fixtures', 'LLM-as-judge'],
-    image: emailAgentPipeline,
-    imageAlt: 'The email agent intake funnel and confidence judge',
-    proofLabel: 'Email Support Agent',
-    proofHref: '/work/email-support-agent/',
+    image: supportInboxPipeline,
+    imageAlt: 'An intake funnel feeding a confidence judge',
+    proofLabel: 'Support inbox agent',
+    proofHref: '/work/support-inbox-agent/',
   },
   {
     title: 'Fail-closed guardrails',
     body: 'When the output is money-adjacent or public, the interesting question is what happens when something goes wrong. Template-first generation, deterministic guards, verify-then-publish, and kill switches that default to off.',
     tags: ['Guardrails', 'PII guards', 'Shadow runs'],
-    image: relayArchitecture,
-    imageAlt: "Relay's three flows and its five-stage fail-closed cleaner",
-    proofLabel: 'Relay',
-    proofHref: '/work/relay/',
+    image: statusPagesArchitecture,
+    imageAlt: 'Three flows and a five-stage fail-closed cleaner',
+    proofLabel: 'Customer status pages',
+    proofHref: '/work/customer-status-pages/',
   },
   {
     title: 'Human-in-the-loop by design',
     body: 'Review queues, interception windows, escalation routing to the person who actually owns the answer, and feedback loops that turn corrections into training examples. Automation that people trust because they can stop it.',
     tags: ['Review dashboards', 'Escalation', 'Slack'],
-    image: jujuArchitecture,
-    imageAlt: 'Juju architecture with escalation and feedback paths',
-    proofLabel: 'Juju',
-    proofHref: '/work/juju/',
+    image: assistantArchitecture,
+    imageAlt: 'Retrieval architecture with escalation and feedback paths',
+    proofLabel: 'Internal knowledge assistant',
+    proofHref: '/work/internal-knowledge-assistant/',
   },
   {
     title: 'Full-cycle systems integration',
@@ -56,7 +56,7 @@ const capabilities = [
     image: onboardingOrchestrator,
     imageAlt: 'The fail-soft onboarding orchestrator',
     proofLabel: 'Onboarding platform',
-    proofHref: '/work/onboarding/',
+    proofHref: '/work/onboarding-platform/',
   },
 ];
 
@@ -68,7 +68,7 @@ const stats = [
   },
   {
     value: '1,090',
-    label: 'Questions answered by Juju',
+    label: 'Questions answered by the internal assistant',
     footnote: 'Eleven weeks, Apr–Jul 2026',
   },
   {
@@ -79,7 +79,7 @@ const stats = [
   {
     value: '184',
     label: 'Automated tests across shipped repos',
-    footnote: '87 on Jarvis, 97 on the onboarding wizard',
+    footnote: '87 on the payments agent, 97 on the onboarding wizard',
   },
 ];
 ---
@@ -171,7 +171,7 @@ const stats = [
   {/* ===================== STATS ===================== */}
   <StatsBar
     stats={stats}
-    note="Measured numbers only. Juju's figures come from its usage report and a hand-audit of every answer it gave in June 2026; the email agent's from a week of production traffic reviewed line by line. Where a project has targets rather than results, its case study says so."
+    note="Measured numbers only. The assistant's figures come from its usage report and a hand-audit of every answer it gave in June 2026; the support agent's from a week of production traffic reviewed line by line. Where a project has targets rather than results, its case study says so."
   />
 
   {/* ===================== CTA ===================== */}

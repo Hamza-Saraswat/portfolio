@@ -129,9 +129,9 @@ ${body}
 }
 
 /* ============================================================
-   1. Email Support Agent — intake funnel + confidence judge
+   1. Support inbox agent — intake funnel + confidence judge
    ============================================================ */
-function emailAgentDiagram() {
+function supportInboxDiagram() {
   const W = 2400;
   const H = 1180;
   const rowY = 300;
@@ -265,16 +265,16 @@ function emailAgentDiagram() {
   return canvas(
     W,
     H,
-    'Email Support Agent — intake funnel and confidence judge',
-    'Live on the support inbox. The judge, not the model, decides what a draft is worth.',
+    'Support inbox agent — intake funnel and confidence judge',
+    'Live on a production support inbox. The judge, not the model, decides what a draft is worth.',
     parts.join('\n')
   );
 }
 
 /* ============================================================
-   2. Jarvis — template-first generation
+   2. Payments agent — template-first generation
    ============================================================ */
-function jarvisDiagram() {
+function paymentsAgentDiagram() {
   const W = 2400;
   const H = 1000;
   const rowY = 420;
@@ -365,16 +365,16 @@ function jarvisDiagram() {
   return canvas(
     W,
     H,
-    'Jarvis — template-first generation',
+    'Payments agent — template-first generation',
     'Money-adjacent email, where a hallucinated sentence is a different class of failure.',
     parts.join('\n')
   );
 }
 
 /* ============================================================
-   3. Relay — three flows
+   3. Customer status pages — three flows
    ============================================================ */
-function relayDiagram() {
+function statusPagesDiagram() {
   const W = 2400;
   const H = 1120;
   const parts = [];
@@ -485,7 +485,7 @@ function relayDiagram() {
   return canvas(
     W,
     H,
-    'Relay — three independent flows',
+    'Customer status pages — three independent flows',
     'The link is the credential. Page loads never touch Salesforce.',
     parts.join('\n')
   );
@@ -593,12 +593,216 @@ function onboardingDiagram() {
   );
 }
 
+/* ============================================================
+   5. Internal knowledge assistant — retrieval architecture
+   Replaces the original hand-drawn export, whose title carried an
+   internal codename.
+   ============================================================ */
+function knowledgeAssistantDiagram() {
+  const W = 2400;
+  const H = 760;
+  const rowY = 400;
+  const parts = [];
+
+  const start = ellipse(['Slack', 'message'], 170, rowY);
+  parts.push(start.svg);
+
+  const app = box(['Slack Bolt app', 'Node.js on Railway'], 640, rowY, {
+    size: 22,
+    minW: 480,
+  });
+  parts.push(app.svg);
+  parts.push(arrow(start.right + 8, rowY, app.left - 10, rowY));
+
+  const model = box(['Model', '+ MCP tool calls'], 1250, rowY, { size: 22, minW: 420 });
+  parts.push(model.svg);
+  parts.push(arrow(app.right + 8, rowY, model.left - 10, rowY));
+
+  const docs = box(['Help center', 'via MCP'], 1900, rowY - 140, {
+    size: 21,
+    minW: 400,
+    fill: C.greenFill,
+    stroke: C.green,
+  });
+  const wiki = box(['Internal wiki', 'scoped query'], 1900, rowY + 140, {
+    size: 21,
+    minW: 400,
+    fill: C.greenFill,
+    stroke: C.green,
+  });
+  parts.push(docs.svg, wiki.svg);
+  parts.push(
+    elbow(model.right + 8, rowY - 20, docs.left - 10, docs.cy, { color: C.green, midX: 1600 }),
+    elbow(model.right + 8, rowY + 20, wiki.left - 10, wiki.cy, { color: C.green, midX: 1600 })
+  );
+
+  const reply = ellipse(['Threaded reply', '+ citations'], 2260, rowY, {
+    size: 20,
+    fill: C.greenFill,
+    stroke: C.green,
+    padX: 28,
+  });
+  parts.push(reply.svg);
+  parts.push(
+    `<path d="M ${docs.right + 8} ${docs.cy} H 2260 V ${reply.top - 8}" fill="none" stroke="${C.green}" stroke-width="3"/>`,
+    `<path d="M ${wiki.right + 8} ${wiki.cy} H 2260 V ${reply.bottom + 8}" fill="none" stroke="${C.green}" stroke-width="3"/>`
+  );
+
+  parts.push(
+    note('searched in parallel — either can fail without taking down the answer', 1250, 640, {
+      size: 20,
+      fill: C.muted,
+    })
+  );
+
+  return canvas(
+    W,
+    H,
+    'Internal knowledge assistant — retrieval architecture',
+    'No embeddings. No vector store. No reranker. Documentation queried at its source.',
+    parts.join('\n')
+  );
+}
+
+/* ============================================================
+   6. AI adoption — the three layers
+   Replaces the original export, which still showed a retracted
+   accuracy figure and a project no longer on the site.
+   ============================================================ */
+function aiAdoptionDiagram() {
+  const W = 2400;
+  const H = 1020;
+  const parts = [];
+
+  const colLabel = (text, x, color) =>
+    note(text, x, 210, { size: 21, fill: color });
+
+  parts.push(colLabel('INFRASTRUCTURE', 460, C.blue));
+  parts.push(colLabel('WHAT IT MADE POSSIBLE', 1250, C.purple));
+  parts.push(colLabel('WHERE IT LANDED', 2020, C.green));
+
+  const infra = [
+    ['Shared prompt library'],
+    ['Machine-readable', 'internal docs'],
+    ['Agent foundation', 'MCP retrieval'],
+  ];
+  let iy = 340;
+  const infraBoxes = [];
+  for (const lines of infra) {
+    const b = box(lines, 460, iy, {
+      size: 21,
+      minW: 560,
+      fill: C.blueFill,
+      stroke: C.blue,
+    });
+    infraBoxes.push(b);
+    parts.push(b.svg);
+    iy += 200;
+  }
+
+  const middle = box(
+    ['Support inbox agent', 'Internal knowledge assistant', 'Payments agent', 'Onboarding platform'],
+    1250,
+    540,
+    { size: 22, minW: 620, padY: 40 }
+  );
+  parts.push(middle.svg);
+  for (const b of infraBoxes) {
+    parts.push(arrow(b.right + 8, b.cy, middle.left - 10, middle.cy, { color: C.blue }));
+  }
+
+  const outcome = box(
+    ['2 agents in production', '4 internal tools shipped', 'Evaluation is routine'],
+    2020,
+    540,
+    { size: 22, minW: 560, fill: C.greenFill, stroke: C.green, padY: 36 }
+  );
+  parts.push(outcome.svg);
+  parts.push(arrow(middle.right + 8, 540, outcome.left - 10, 540, { color: C.green }));
+
+  parts.push(
+    `<rect x="56" y="${H - 150}" width="${W - 112}" height="94" rx="12" fill="${C.purpleFill}" stroke="${C.purple}" stroke-width="3"/>`,
+    note(
+      'Infrastructure first. The unglamorous layer is what made everything after it cheap.',
+      W / 2,
+      H - 96,
+      { size: 24, fill: C.purple }
+    )
+  );
+
+  return canvas(
+    W,
+    H,
+    'Building an AI practice — three layers',
+    'From private experiments to systems the company operates.',
+    parts.join('\n')
+  );
+}
+
+/* ============================================================
+   7. Onboarding — product cycle
+   ============================================================ */
+function onboardingFlowDiagram() {
+  const W = 2400;
+  const H = 700;
+  const rowY = 370;
+  const parts = [];
+
+  const start = ellipse(['Closed won', 'in Salesforce'], 190, rowY, {
+    size: 20,
+    padX: 32,
+  });
+  parts.push(start.svg);
+
+  const steps = [
+    { lines: ['Link generated', 'idempotent API'], fill: C.purpleFill, stroke: C.purple },
+    { lines: ['Guided wizard', 'React + TypeScript'], fill: C.purpleFill, stroke: C.purple },
+    { lines: ['Fail-soft', 'orchestrator'], fill: C.redFill, stroke: C.red },
+    { lines: ['Account configured', 'customer logged in'], fill: C.greenFill, stroke: C.green },
+  ];
+
+  let x = 700;
+  let prevRight = start.right;
+  for (const step of steps) {
+    const b = box(step.lines, x, rowY, {
+      size: 21,
+      minW: 420,
+      fill: step.fill,
+      stroke: step.stroke,
+    });
+    parts.push(b.svg);
+    parts.push(arrow(prevRight + 8, rowY, b.left - 10, rowY));
+    prevRight = b.right;
+    x = b.right + 260;
+  }
+
+  parts.push(
+    note(
+      'Per-module checkpoints, so a closed tab is never a lost afternoon.',
+      W / 2,
+      580,
+      { size: 21, fill: C.muted }
+    )
+  );
+
+  return canvas(
+    W,
+    H,
+    'Customer onboarding — the full cycle',
+    'A closed deal becomes a configured account without an implementation call.',
+    parts.join('\n')
+  );
+}
+
 /* ============================================================ */
 const diagrams = [
-  ['email-agent-pipeline', emailAgentDiagram()],
-  ['jarvis-template-first', jarvisDiagram()],
-  ['relay-architecture', relayDiagram()],
+  ['support-inbox-pipeline', supportInboxDiagram()],
+  ['payments-template-first', paymentsAgentDiagram()],
+  ['status-pages-architecture', statusPagesDiagram()],
   ['onboarding-orchestrator', onboardingDiagram()],
+  ['knowledge-assistant-architecture', knowledgeAssistantDiagram()],
+  ['ai-adoption-layers', aiAdoptionDiagram()],
+  ['onboarding-flow', onboardingFlowDiagram()],
 ];
 
 for (const [name, svg] of diagrams) {
