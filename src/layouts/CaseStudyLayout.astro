@@ -141,18 +141,22 @@ const next = all[(index + 1) % all.length];
     margin-bottom: 1.25rem;
   }
 
-  .case-body > ul,
-  .case-body > ol {
+  /* Prose lists only. Component lists (StepList) carry .breakout and supply
+     their own layout — the shorthand margin here would otherwise cancel the
+     breakout offset and the list-style would double up on their numbering. */
+  .case-body > ul:not(.breakout),
+  .case-body > ol:not(.breakout) {
     margin: 1.25rem 0;
     padding-left: 1.25rem;
     color: var(--color-ink);
     line-height: 1.75;
   }
-  .case-body > ul { list-style: disc; }
-  .case-body > ol { list-style: decimal; }
-  .case-body > ul > li,
-  .case-body > ol > li { margin-bottom: 0.5rem; padding-left: 0.25rem; }
-  .case-body li::marker { color: #c3cad6; }
+  .case-body > ul:not(.breakout) { list-style: disc; }
+  .case-body > ol:not(.breakout) { list-style: decimal; }
+  .case-body > ul:not(.breakout) > li,
+  .case-body > ol:not(.breakout) > li { margin-bottom: 0.5rem; padding-left: 0.25rem; }
+  .case-body > ul:not(.breakout) > li::marker,
+  .case-body > ol:not(.breakout) > li::marker { color: #c3cad6; }
 
   .case-body strong { color: var(--color-charcoal); font-weight: 600; }
 

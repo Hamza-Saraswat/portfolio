@@ -71,7 +71,7 @@ const supportingProjects = defineCollection({
     blurb: z.string(),
     tags: z.array(z.string()).max(4),
     order: z.number(),
-    link: z.string().url().optional(),
+    link: z.url().optional(),
   }),
 });
 

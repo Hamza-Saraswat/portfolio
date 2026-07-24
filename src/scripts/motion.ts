@@ -3,6 +3,10 @@
  * count-ups. Everything here is an enhancement — with JS off or reduced
  * motion on, the page renders complete and static.
  */
+// Tells the inline failsafe in BaseLayout that reveals are under control.
+// Set immediately on load, before any work that could throw.
+document.documentElement.setAttribute('data-motion-ready', '');
+
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- Scroll reveals ---------- */

@@ -69,10 +69,17 @@ const personSchema = {
 
     <script is:inline set:html={JSON.stringify(personSchema)} type="application/ld+json" />
 
-    {/* Mark JS as available so scroll-reveal initial states only apply when
-        something can actually reveal them. */}
+    {/* Scroll-reveal initial states are gated on this class, so they only
+        apply when JS is available to undo them. The timeout is the failsafe:
+        if the motion module never loads, the class is dropped and everything
+        renders visible rather than staying invisible forever. */}
     <script is:inline>
       document.documentElement.classList.add('js');
+      setTimeout(function () {
+        if (!document.documentElement.hasAttribute('data-motion-ready')) {
+          document.documentElement.classList.remove('js');
+        }
+      }, 2500);
     </script>
   </head>
 

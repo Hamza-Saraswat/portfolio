@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { SITE } from '../consts';
+
+const openTo = [
+  'AI engineering roles',
+  'Forward deployed engineering',
+  'Production AI consulting',
+  'Technical partnerships',
+];
+---
+
+<BaseLayout
+  title="Contact"
+  description="Get in touch about AI engineering roles, forward-deployed work, or production AI consulting."
+>
+  <section class="pt-16 pb-20 md:pt-24 md:pb-28">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-14 md:gap-20 items-start">
+        <div>
+          <p class="t-eyebrow">Contact</p>
+          <h1 class="t-display mt-4">Let's talk</h1>
+          <p class="t-lede mt-6">
+            If you are building something with AI and want it to hold up in front of real users,
+            I would like to hear about it.
+          </p>
+
+          <div class="mt-10">
+            <h2 class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted mb-4">
+              Currently open to
+            </h2>
+            <div class="flex flex-wrap gap-2">
+              {openTo.map((item) => <span class="tech-tag">{item}</span>)}
+            </div>
+          </div>
+
+          <div class="mt-10 space-y-4">
+            <div>
+              <h2 class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted mb-2">
+                Email
+              </h2>
+              <a
+                href={`mailto:${SITE.email}`}
+                class="text-charcoal hover:text-accent transition-colors">{SITE.email}</a
+              >
+            </div>
+            <div>
+              <h2 class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted mb-2">
+                Elsewhere
+              </h2>
+              <div class="flex flex-wrap gap-x-5 gap-y-2">
+                <a
+                  href={SITE.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-charcoal hover:text-accent transition-colors">LinkedIn</a
+                >
+                <a
+                  href={SITE.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-charcoal hover:text-accent transition-colors">GitHub</a
+                >
+              </div>
+            </div>
+            <div>
+              <h2 class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted mb-2">
+                Based in
+              </h2>
+              <p class="text-charcoal">{SITE.location}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card p-6 md:p-8">
+          <h2 class="t-h3 mb-6">Send a message</h2>
+          <ContactForm />
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

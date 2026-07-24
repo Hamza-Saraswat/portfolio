@@ -1,0 +1,80 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import SupportingCard from '../../components/SupportingCard.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+
+const caseStudies = (await getCollection('caseStudies', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const supporting = (await getCollection('supportingProjects')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+---
+
+<BaseLayout
+  title="Work"
+  description="Six case studies on production AI systems: agents on live inboxes, guardrail pipelines, evaluation harnesses, and the systems integration behind them."
+>
+  <section class="pt-16 pb-12 md:pt-24 md:pb-16">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <p class="t-eyebrow">Work</p>
+      <h1 class="t-display mt-4">Systems that stayed up</h1>
+      <p class="t-lede mt-6 max-w-[46rem]">
+        Six case studies. Each one says plainly what shipped, what is still in pilot, what was
+        measured, and what I got wrong. Where a project has targets rather than results, it says
+        so.
+      </p>
+    </div>
+  </section>
+
+  <section class="pb-20 md:pb-28">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <h2 class="sr-only">Case studies</h2>
+      <div class="grid md:grid-cols-2 gap-6" data-reveal-stagger>
+        {caseStudies.map((entry) => <ProjectCard entry={entry} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24 bg-surface border-t border-border">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <SectionHeading
+        eyebrow="More work"
+        title="Smaller pieces"
+        lede="Worth a sentence, not a case study."
+        data-reveal
+      />
+      <div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-4" data-reveal-stagger>
+        {
+          supporting.map((p) => (
+            <SupportingCard
+              title={p.data.title}
+              blurb={p.data.blurb}
+              tags={p.data.tags}
+              link={p.data.link}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24">
+    <div class="max-w-[1200px] mx-auto px-6 text-center" data-reveal>
+      <h2 class="t-h2">Have something that needs to hold up?</h2>
+      <p class="t-lede mt-5 mx-auto max-w-[38rem]">
+        I am happy to talk through what you are building and where it might break.
+      </p>
+      <div class="mt-8">
+        <a href="/contact/" class="btn-primary">Get in touch</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import '../../scripts/motion.ts';
+</script>
