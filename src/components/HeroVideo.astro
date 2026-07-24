@@ -1,0 +1,36 @@
+---
+/**
+ * Hero media. Renders on every breakpoint (the old site hid it below md,
+ * so mobile visitors got no visual at all). No `autoplay` attribute —
+ * playback is driven by an observer so it pauses off-screen and never
+ * starts under reduced motion.
+ */
+---
+
+<div class="relative mx-auto w-full max-w-[340px] md:max-w-[420px] hero-card">
+  <div
+    class="hero-halo absolute -inset-6 rounded-[2rem] pointer-events-none"
+    style="background: linear-gradient(140deg, rgba(99,91,255,0.16) 0%, rgba(128,233,255,0.14) 45%, rgba(99,91,255,0.05) 100%); filter: blur(28px);"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div
+    class="relative rounded-2xl overflow-hidden aspect-[4/5] bg-charcoal shadow-[0_1px_2px_rgba(48,49,61,0.08),0_12px_40px_rgba(48,49,61,0.12)] ring-1 ring-black/5"
+  >
+    <video
+      data-hero-video
+      class="w-full h-full object-cover"
+      width="720"
+      height="900"
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      poster="/videos/hero-poster.jpg"
+      aria-label="Animation of an agent pipeline deploying and a multi-agent orchestration graph"
+    >
+      <source src="/videos/hero.mp4" type="video/mp4" />
+    </video>
+  </div>
+</div>

@@ -1,0 +1,100 @@
+---
+title: Customer Status Pages
+tagline: Customer-facing status pages fed by a language model, with five guardrail stages between the model and the public.
+summary: Public ticket-status pages that replace hand-maintained spreadsheets, with a fail-closed cleaning pipeline that verifies every LLM-written update before it can be published.
+timeframe: Jul 2026
+status: pilot
+statusLabel: UAT verified, pilot pending
+attribution: Co-built with a colleague, roughly an even split of the work. The cleaning pipeline, its evaluation harness, and the shadow run are mine.
+order: 3
+cardImage: ../../assets/diagrams/status-pages-architecture.png
+cardImageAlt: Diagram of three flows — token minting, scheduled sync through a cleaner, and server-rendered page loads
+tags: ['Next.js', 'Salesforce Bulk API', 'Guardrails', 'Evals', 'Supabase', 'Vercel']
+stats:
+  - value: '25/25'
+    label: Eval fixtures clean
+    footnote: Three-lens judge panel
+  - value: '5/5'
+    label: Adversarial cases caught
+    footnote: Faithfulness gate self-test
+  - value: '26/26'
+    label: Updates improved in shadow
+    footnote: Read-only run against live tickets
+  - value: '0'
+    label: Salesforce calls at page load
+related: ['support-inbox-agent', 'payments-operations-agent']
+---
+
+import Figure from '../../components/Figure.astro';
+import StepList from '../../components/StepList.astro';
+import statusPagesArchitecture from '../../assets/diagrams/status-pages-architecture.png';
+
+## Context
+
+When a FieldPulse customer has an open technical support ticket, they want to know what is happening with it. The answer used to live in a spreadsheet: customer success kept per-customer trackers by hand, updating them from Salesforce and emailing them out.
+
+That works until it doesn't. It is manual, it goes stale between updates, and it scales linearly with the number of customers who want visibility.
+
+This replaces that with a live page. Every Salesforce account with a support case gets one permanent link showing its open tickets, their status, and a plain-language summary of the latest update on each.
+
+## Problem
+
+Three constraints shaped everything.
+
+**The page is public.** There is no login — the link itself is the credential. Anything rendered on it is visible to whoever holds the URL, so nothing internal can ever reach it.
+
+**The Salesforce org was already at about 91% of its API quota.** A design that called Salesforce on page load would either get throttled or push a business-critical system over its limit.
+
+**The source text was written for internal readers.** The "latest update" on a ticket is the most recent outbound email from a support rep — full of internal shorthand, dollar amounts, other people's names, and instructions that make no sense on a read-only page. It cannot be shown raw, and it cannot simply be hidden either, because then the page tells the customer nothing.
+
+That last one is the interesting problem. The model has to rewrite internal text into something public-safe, which means it has to be trusted with a rewrite that could invent a commitment the company never made.
+
+## Architecture
+
+<Figure
+  src={statusPagesArchitecture}
+  alt="Three flows: Salesforce case creation mints a token, a two-hourly cron syncs through the cleaner, and customer visits are served from Supabase"
+  caption="Three flows that never block each other. Page loads never touch Salesforce."
+/>
+
+The system is three independent flows:
+
+**A case is created.** Salesforce fires on case creation, the service mints one permanent random token for that account, and hands the URL back for Salesforce to store. Minting is idempotent — the same account always gets the same link — and event-driven only. There is deliberately no backfill, because backfilling would mint links for every historical account at once.
+
+**Every two hours, data refreshes.** A scheduled job pulls case statuses and the newest outbound email per case through the Salesforce Bulk API — submit a job, poll it, download the CSV — specifically to stay off the REST quota that was already saturated. Each update runs through the cleaner, and the results are written to Supabase.
+
+**A customer opens their link.** The page renders on the server from Supabase alone. Salesforce is never in the request path, so pages stay fast, survive a Salesforce outage, and add zero load to a strained org. An unknown token renders a 404.
+
+Security is structural rather than procedural: the database has row-level security on with no policies at all, so only the server-side service role can read anything; the browser only ever receives finished HTML. Pages are marked no-index, and the referrer policy is set to no-referrer so the token cannot leak through a click-out.
+
+### The five-stage cleaner
+
+Turning a rep's internal email into one or two public-safe sentences is where the risk concentrates. Every stage fails closed — if anything goes wrong, the page falls back to a safe generic line rather than publishing something unverified.
+
+<StepList steps={[
+  { title: 'Cut the quoted history', body: 'Thread history is stripped before the model sees it, so a question from three weeks ago cannot bleed into a card labelled "latest update."' },
+  { title: 'Generate', body: 'The model rewrites the update in a specified voice, with internal jargon banned, and with the rule that it must sanitise rather than suppress: an email about an $18.40 payment mismatch becomes a note about a small mismatch we asked the customer to confirm. Useful, but with the number gone.' },
+  { title: 'Scrub for sensitive values', body: 'Deterministic pattern matching over the output, not the input — dollar amounts, email addresses, phone numbers.' },
+  { title: 'Ban impossible calls to action', body: 'The page is read-only. Any update telling the customer to "reply here" is pointing at a reply box that does not exist, so those are rejected outright.' },
+  { title: 'Verify, then publish', body: 'A second model call checks the rewritten update against the source email and confirms it claims nothing the source did not say. If this check cannot complete, the update does not publish.' },
+]} />
+
+## Outcome
+
+The system was verified end to end against the Salesforce UAT sandbox in July 2026: a case created in Salesforce produced a token, the scheduled sync pulled it through the Bulk API, and the page rendered real cases with correct status chips and cleaned updates. A second sync created no duplicate accounts, confirming the event-only design held.
+
+The cleaner has its own evaluation harness. Against 25 fixtures, judged on three separate lenses — faithfulness to the source, status consistency and voice, and public safety — **25 of 25** came back clean, with zero flagged for review and zero hard failures.
+
+The harness also tests itself. Five adversarial cases are fed through deliberately, including a fabricated refund commitment and an impossible call to action, and the faithfulness gate must catch **all five**. It does. An evaluation suite that never fails is not measuring anything, so it has to be shown failing on purpose.
+
+Before proposing the pipeline as a replacement, I ran it in shadow: every tracked ticket re-cleaned read-only through the new pipeline, with live and shadow output diffed side by side. **26 of 26** came out better — including one live update that told a customer to reply on a page with no reply box.
+
+To be clear about status: this is verified on a sandbox and pending pilot rollout. It is not yet in front of customers. The remaining work is Salesforce automation, key rotation, and a production domain.
+
+## What I'd do differently
+
+**Shadow-run earlier.** The shadow run was the single most convincing artefact produced on this project — it turned "the new pipeline should be better" into twenty-six side-by-side diffs. I built it near the end. It should have been the first thing, running continuously as the prompt changed.
+
+**Treat the docs as code from the start.** The architecture document said the sync ran every four to six hours; the deployed configuration said every two. Nothing broke, but the doc was wrong, and a doc that is wrong about something checkable is not trustworthy about anything else.
+
+**Push more of the guard into deterministic code.** The two model calls are the slow, expensive, and least predictable parts of the pipeline. Some of what the second call verifies could be handled by pattern matching, and every check moved out of a model call is a check that cannot drift.

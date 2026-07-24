@@ -1,0 +1,120 @@
+---
+title: Support Inbox Agent
+tagline: An AI agent on a live support inbox, with a second model deciding whether its draft is good enough to send.
+summary: A production email agent that drafts grounded first responses for the FieldPulse support inbox, with a calibrated confidence judge that overrides the model's own self-assessment.
+timeframe: Mar–Jul 2026
+status: production
+statusLabel: In production
+attribution: Built with a colleague who laid the foundation of the service. I took it into production — the confidence judge, the evaluation suite, and the staged human-in-the-loop rollout are mine.
+order: 1
+cardImage: ../../assets/diagrams/support-inbox-pipeline.png
+cardImageAlt: Diagram of the intake funnel feeding a confidence judge that routes drafts to human review
+tags: ['Node/TypeScript', 'Braintrust evals', 'LLM-as-judge', 'MCP', 'Supabase', 'HITL']
+stats:
+  - value: '208'
+    label: Emails processed
+    footnote: One measured week, June 2026
+  - value: '38'
+    label: Drafts written
+    footnote: 18% of intake reached generation
+  - value: '100%'
+    label: Clean of forbidden phrases
+    footnote: Braintrust rubric, same week
+  - value: '94%'
+    label: Rated human-sounding
+    footnote: Braintrust rubric, same week
+related: ['payments-operations-agent', 'internal-knowledge-assistant']
+---
+
+import Figure from '../../components/Figure.astro';
+import StepList from '../../components/StepList.astro';
+import supportInboxPipeline from '../../assets/diagrams/support-inbox-pipeline.png';
+
+## Context
+
+FieldPulse sells field service management software to contractors, and like any B2B platform it runs a support inbox that never empties. Every inbound email needs a first response: someone reads it, works out what the customer is actually asking, finds the answer in the help center, and writes a reply that sounds like a person rather than a macro.
+
+That first response is the most repetitive part of the job and the most exposed. It sets the tone for the whole ticket, and it is where a wrong answer does the most damage.
+
+## Problem
+
+The obvious move — point a language model at the inbox and let it reply — is also the fastest way to lose a customer's trust. A support agent that answers confidently and incorrectly is worse than no agent at all, because the customer has no way to tell the difference.
+
+Three things had to be true before anything could touch a real inbox:
+
+- The agent could only answer from documentation that actually exists, with citations.
+- It had to know when it did not know, and say so by escalating rather than guessing.
+- A person had to stay in the loop while we found out how good it really was.
+
+The hard part is the second one. Models are famously bad at judging their own output; ask one how confident it is and it will tell you what you want to hear.
+
+## Approach
+
+The system is a funnel, and the funnel is the design. Each layer is cheaper than the one behind it, and each one exists to keep work away from the expensive layers.
+
+<StepList steps={[
+  { title: 'Deduplicate and check the kill switch', body: 'Idempotency on the message id, plus a single config flag that halts drafting at intake if anything looks wrong in production.' },
+  { title: 'Skip anything that is not a first response', body: 'The agent only ever writes first responses. Replies on an existing thread belong to the rep who owns the conversation. This alone removed about half the intake.' },
+  { title: 'Apply domain and keyword rules', body: 'Deterministic filters that block, force human review, or allow — no model call needed to know that certain senders and certain topics are never drafted.' },
+  { title: 'Classify the recipients', body: 'Work out whether the customer is the primary recipient, whether teammates are copied, and whether we were blind-copied. Anything ambiguous is drafted but forced to review.' },
+  { title: 'Triage with a small fast model', body: 'A cheap call decides whether the email warrants a response at all and sorts it into one of eight buckets. It fails open: if the triage call errors, the email is treated as if it needs a response, because dropping a real customer is the worse failure.' },
+]} />
+
+Only what survives all five layers reaches the part that costs real money — retrieval and generation.
+
+## Architecture
+
+<Figure
+  src={supportInboxPipeline}
+  alt="The intake funnel feeding a RAG responder and confidence judge, which forks to a human review queue or a delayed send path"
+  caption="Five intake layers, then generation, then a judge that decides what the draft is worth."
+/>
+
+Generation is a tool-use loop rather than a single prompt. The model searches the FieldPulse help center through its MCP endpoint, gets results back, and can search again if the first attempt did not answer the question. On the final iteration tool use is disabled so it has to commit to an answer. The output is validated against a strict schema: reply text, confidence, citations, category, reasoning.
+
+Every documentation snippet retrieved along the way is kept, deduplicated by URL. That set of snippets is the evidence, and the next stage is where it gets used.
+
+### The confidence judge
+
+This is the part I would keep if I could only keep one thing.
+
+The generating model reports its own confidence, and that number is thrown away. A separate model call scores the draft on three dimensions against the retrieved snippets:
+
+- **Faithfulness** — is every claim in this reply actually supported by the documentation we retrieved?
+- **Coverage** — does it answer the question that was asked?
+- **Fit** — was this question even in scope for our documentation?
+
+Those three scores are combined **in code**, not in a prompt: faithfulness is weighted at 0.6, coverage and fit at 0.2 each. On top of that sits a hard cap. One unsupported claim caps the final confidence at 0.5. Two or more caps it at 0.3, no matter how well the reply scores on everything else.
+
+The cap is the point. Without it, a well-written reply with one fabricated detail can average its way to a high score, because it genuinely is well-written on two of three dimensions. The cap means the model cannot argue its way out of having made something up.
+
+The same scorer runs in two places: live in the pipeline, and offline in the evaluation suite. When the offline number moves, it is measuring the thing production actually does.
+
+### Keeping a person in the loop
+
+High-confidence drafts do not go straight out. They land in a queue with a delay, and during that window anyone can pull a draft back or kill it outright from Slack. The review dashboard is a real application — the queue, the original email, the retrieved sources, the judge's scores and its reasoning.
+
+In the first production stage, auto-send is switched off entirely. Every single draft is reviewed by a person before a customer sees it.
+
+## Outcome
+
+A week of production traffic in June 2026, pulled from the live database and reviewed line by line:
+
+- **208 emails** ingested. **38 drafts** written — about 18% of intake reached the generation stage.
+- **51%** of intake was skipped as follow-ups on existing threads, exactly as designed.
+- Rubric scores on the drafts: **100%** free of forbidden phrases (no process leakage, no internal jargon), **94%** rated human-sounding, **93%** on brand vocabulary, **93%** on formatting, **82%** on tone.
+- The triage classifier agreed with ground truth on **72%** of decisions.
+
+I want to be precise about what these numbers are not. There is no deflection rate here, and no "X% of tickets resolved automatically," because auto-send was deliberately off for this entire period. Every draft was reviewed by a person. What the numbers measure is draft quality and triage accuracy at real volume, which is the honest thing to measure at this stage.
+
+The same review surfaced a real failure: the intake filters dropped roughly three genuine customer emails that week as noise. That is the cost of a conservative funnel, and finding it was the reason for reading all 208.
+
+## What I'd do differently
+
+**Build the fixture set from real data on day one.** The first evaluation fixtures were hand-written, and hand-written fixtures are wrong in the specific ways you cannot imagine. Real emails have quirks — signatures, forwarded chains, subject lines that contradict the body — that you only discover by looking at them.
+
+**Tune the intake filters against measured false negatives, not intuition.** The filters were tuned to be conservative, and conservative filters silently drop real customers. I only knew that because I read a week of production traffic by hand. That check should have been scheduled from the start rather than run once.
+
+**Treat the judge's calibration as a thing to measure, not a thing to trust.** The evidence suggests the judge under-rates good replies — it is stricter than a human reviewer would be. That is the right direction to be wrong in, but "wrong in a safe direction" is still wrong, and I did not have a systematic way to measure the gap.
+
+The architecture outlived its first use case, which is the strongest evidence it was right. When a second, very different email agent was needed for payments operations, it became a second brain running on the same chassis rather than a second codebase — same intake listener, same review dashboard, same database with per-agent isolation. That story is the [payments operations agent](/work/payments-operations-agent/).

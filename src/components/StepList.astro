@@ -1,0 +1,31 @@
+---
+interface Step {
+  title: string;
+  body: string;
+}
+
+interface Props {
+  steps: Step[];
+}
+
+const { steps } = Astro.props;
+---
+
+<ol class="my-8 space-y-4 breakout list-none pl-0">
+  {
+    steps.map((step, i) => (
+      <li class="card p-5 flex gap-4 items-start">
+        <span
+          class="shrink-0 w-7 h-7 rounded-lg bg-accent-light border border-accent-border text-accent-hover font-mono text-xs flex items-center justify-center mt-0.5"
+          aria-hidden="true"
+        >
+          {i + 1}
+        </span>
+        <div>
+          <h3 class="font-semibold text-charcoal">{step.title}</h3>
+          <p class="mt-1.5 t-body text-[0.9375rem]">{step.body}</p>
+        </div>
+      </li>
+    ))
+  }
+</ol>

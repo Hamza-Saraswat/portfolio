@@ -1,0 +1,100 @@
+---
+title: Payments Operations Agent
+tagline: Payments email automation where the language model never writes the customer-facing body.
+summary: A payments-operations agent that classifies and extracts, but never composes — the reply body is copied verbatim from a template registry, making a hallucinated sentence structurally impossible.
+timeframe: Mar–Jul 2026
+status: complete
+statusLabel: Complete, merged into the agent platform
+attribution: A fork of the support inbox agent, so it inherits that codebase's shared foundation. The payments-specific work is mine — 18 pull requests.
+order: 4
+cardImage: ../../assets/diagrams/payments-template-first.png
+cardImageAlt: Diagram showing an LLM classifier feeding a template registry and deterministic PII guard, never writing the reply body
+tags: ['TypeScript', 'Structured output', 'Fail-closed', 'PII guards', 'Testing']
+stats:
+  - value: '87'
+    label: Unit tests
+  - value: '18/18'
+    label: Live classifier accuracy
+    footnote: Against scrubbed real-case fixtures
+  - value: '22'
+    label: Real cases scrubbed into fixtures
+  - value: '2'
+    label: Hazards found and removed
+    footnote: Both before any deployment
+related: ['support-inbox-agent', 'customer-status-pages']
+---
+
+import Figure from '../../components/Figure.astro';
+import paymentsFlow from '../../assets/diagrams/payments-template-first.png';
+
+## Context
+
+FieldPulse processes payments for its customers, which means that when money goes wrong, someone gets an email about it. A deposit is returned, an account is closed, a payment gets flagged for review — the payment processor sends a notice to an internal inbox, and someone on the payments team has to turn that notice into a message to the merchant.
+
+The work is formulaic and takes about ten minutes each time. Read the notice, identify the merchant, pick the right template, fill in the amount and the last four digits, strip out everything internal, send.
+
+## Problem
+
+This looks like the support agent's problem, and it is not.
+
+A slightly-off support answer is an annoyance; the customer replies and a rep corrects it. A wrong dollar amount in a payments notice is a different class of failure. So is leaking another customer's name, an internal payment identifier, or the fraud reasoning behind a review decision.
+
+The scope was deliberately narrow: ACH return notices and payment reviews only. Two categories that would have been technically straightforward — bank account change requests and chargebacks — were ruled permanently out of scope, because an automated reply about changing bank details is exactly the shape of a deposit-redirect fraud.
+
+## Approach
+
+The design inverts the usual arrangement:
+
+> The language model never writes the customer-facing body.
+
+The model does exactly two jobs. It picks a template, and it extracts field values. It returns strict JSON with no prose in it at all. The body of the reply is then copied **verbatim** from a template registry, with the extracted values substituted into labelled blanks.
+
+A hallucinated sentence is not unlikely under this design. It is structurally impossible — there is no code path where model-generated prose reaches a customer.
+
+<Figure
+  src={paymentsFlow}
+  alt="Payment notice flows into a classifier and extractor, then a template registry copies the body verbatim, then a deterministic guard, then human review"
+  caption="The model classifies and extracts. The template writes."
+/>
+
+Three things follow from that inversion:
+
+**The template id is validated against the actual registry.** The model cannot invent a template that does not exist; the schema rejects it.
+
+**The model populates a denylist.** As it reads the notice, it flags the internal values it saw — payer names, internal identifiers, fraud reasoning — into a `denylist_terms` array. It is not trusted to keep those out of the reply; it is used to tell the next stage what to look for.
+
+**A missing required field produces no draft.** If the extractor cannot find the return amount, the system does not guess and does not draft. A human starts from scratch, which is exactly what should happen.
+
+### Fail closed, everywhere
+
+The support agent this was forked from fails *open* in places, deliberately: if triage errors, treat the email as needing a response, because dropping a real customer is worse than an unnecessary draft.
+
+This agent flips those defaults. If the configuration cannot be read, automation switches off rather than on. The list of sensitive templates is hard-coded in source rather than stored as a toggleable database value, so no one can enable one by editing a row. The recipient address is entered by a human every time — the notice arrives *from* the payment processor and does not say who the merchant is, so there is nothing safe to infer, and the send button stays disabled until a person supplies one.
+
+The final guard is deterministic rather than model-based. It scans the finished draft for internal identifier patterns, processor links, internal addresses, and every term the classifier flagged. It is deliberately over-suspicious: a false positive means a human looks at a draft, a false negative means a customer sees another customer's data. It also tells the reviewer what internal detail the source carried, without those values entering the draft.
+
+## Outcome
+
+The fixture corpus is the part I am most confident about. The first fixtures were hand-written and wrong in ways that mattered — real notices come from three different sender addresses, delimit fields inconsistently with either brackets or asterisks, and vary the sign of the amount depending on the return code. None of that was in my imagination.
+
+So colleagues supplied 22 real cases, and I scrubbed them: names and businesses faked, identifiers regenerated to the same shape, amounts jittered — but the structure, the delimiter quirks, and the real return codes kept exactly as they are. A test in the suite greps the fixture corpus for real identifiers and fails the build if any survive. The standing rule was that no category could be enabled without a real-scrubbed fixture behind it.
+
+That produced 18 fixtures, **87 unit tests**, and a live classifier that scored **18 out of 18**. End to end, a real notice produced a correct draft in the review queue in about fifteen seconds.
+
+Two hazards were found and removed before anything shipped, both inherited from the fork:
+
+**The Slack "approve and send" button had no recipient field.** Approving from Slack would have fallen back to the sender of the original email — which, for a payment notice, is the payment processor. It would have emailed the processor a message intended for a merchant. The entire Slack interactivity surface was deleted rather than patched.
+
+**Slack alerts were posting the raw notice.** The first 280 characters of the source, which routinely contain internal identifiers and customer names. Alerts now carry only merchant, template, tier, and reason — and a test greps the alert payload to keep it that way.
+
+There is also a finding I did not expect. In live testing, a byte-identical email body classified differently depending only on the sender address. Sender is a load-bearing classification signal, which means a self-sent test email cannot reproduce production behaviour — and the failure mode was safe (it routed to review rather than drafting), which is the only reason it was a finding rather than an incident.
+
+It was never deployed as its own service, which was the plan changing rather than the project stalling. Instead of running a second application, it was merged back into the support agent as a second brain on one chassis: multi-inbox routing, per-agent tool authorisation, and row-level isolation per agent in the shared database. One codebase, one review dashboard, two agents that cannot see each other's data.
+
+## What I'd do differently
+
+**Get real data before writing a single fixture.** Every wrong assumption in this project came from a hand-written fixture, and every one of them was corrected by a real case. The scrubbing pipeline should have been the first thing built.
+
+**Test against production-shaped delivery from the start.** The sender finding would have been obvious in week one with a proper delivery path, instead of surfacing late in live testing.
+
+**Write down which templates may never be automated, and why, in the repository.** The reasoning for excluding bank-account-change requests lived in my head and in a design document. It belongs next to the code, as a comment on the hard-coded list, so the next person to touch it inherits the reasoning and not just the rule.

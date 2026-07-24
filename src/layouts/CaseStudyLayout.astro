@@ -1,0 +1,232 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import StatusPill from '../components/StatusPill.astro';
+import StatsGrid from '../components/StatsGrid.astro';
+
+interface Props {
+  entry: CollectionEntry<'caseStudies'>;
+}
+
+const { entry } = Astro.props;
+const { title, tagline, summary, timeframe, status, statusLabel, attribution, tags, stats } =
+  entry.data;
+
+// Next project in the published sequence, wrapping at the end.
+const all = (await getCollection('caseStudies', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const index = all.findIndex((e) => e.id === entry.id);
+const next = all[(index + 1) % all.length];
+---
+
+<BaseLayout title={title} description={summary} type="article">
+  <article>
+    {/* ---------- Header ---------- */}
+    <header class="pt-16 pb-12 md:pt-24 md:pb-16 border-b border-border">
+      <div class="max-w-[1200px] mx-auto px-6">
+        <div class="prose-column">
+          <a
+            href="/work/"
+            class="inline-flex items-center gap-2 text-sm text-muted hover:text-accent transition-colors mb-8"
+          >
+            <svg
+              class="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            All work
+          </a>
+
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 mb-5">
+            <StatusPill status={status} label={statusLabel} />
+            <span class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted"
+              >{timeframe}</span
+            >
+          </div>
+
+          <h1 class="t-display">{title}</h1>
+          <p class="t-lede mt-5">{tagline}</p>
+
+          {
+            attribution && (
+              <p class="mt-6 text-sm text-muted border-l-2 border-accent-border pl-4 leading-relaxed">
+                {attribution}
+              </p>
+            )
+          }
+
+          <div class="mt-7 flex flex-wrap gap-1.5">
+            {tags.map((tag) => <span class="tech-tag">{tag}</span>)}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    {/* ---------- Body ---------- */}
+    <div class="py-14 md:py-20">
+      <div class="max-w-[1200px] mx-auto px-6">
+        <div class="prose-column">
+          {stats && stats.length > 0 && <StatsGrid stats={stats} />}
+
+          <div class="case-body">
+            <slot />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* ---------- Next project ---------- */}
+    {
+      next && next.id !== entry.id && (
+        <div class="border-t border-border bg-surface">
+          <div class="max-w-[1200px] mx-auto px-6 py-14">
+            <div class="prose-column">
+              <p class="t-eyebrow mb-3">Next case study</p>
+              <a href={`/work/${next.id}/`} class="group inline-flex items-baseline gap-3">
+                <span class="t-h3 text-charcoal group-hover:text-accent transition-colors">
+                  {next.data.title}
+                </span>
+                <span
+                  class="text-accent transition-transform group-hover:translate-x-1"
+                  aria-hidden="true"
+                >
+                  &rarr;
+                </span>
+              </a>
+              <p class="mt-3 t-body text-muted">{next.data.tagline}</p>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<script>
+  import '../scripts/motion.ts';
+</script>
+
+<style is:global>
+  /* Case-study prose. Scoped to the body so MDX content inherits editorial
+     typography without a plugin wrapping every element. */
+  .case-body > h2 {
+    font-size: clamp(1.375rem, 2.5vw, 1.75rem);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    color: var(--color-charcoal);
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    scroll-margin-top: 6rem;
+  }
+
+  .case-body > h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-charcoal);
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .case-body > p {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--color-ink);
+    margin-bottom: 1.25rem;
+  }
+
+  /* Prose lists only. Component lists (StepList) carry .breakout and supply
+     their own layout — the shorthand margin here would otherwise cancel the
+     breakout offset and the list-style would double up on their numbering. */
+  .case-body > ul:not(.breakout),
+  .case-body > ol:not(.breakout) {
+    margin: 1.25rem 0;
+    padding-left: 1.25rem;
+    color: var(--color-ink);
+    line-height: 1.75;
+  }
+  .case-body > ul:not(.breakout) { list-style: disc; }
+  .case-body > ol:not(.breakout) { list-style: decimal; }
+  .case-body > ul:not(.breakout) > li,
+  .case-body > ol:not(.breakout) > li { margin-bottom: 0.5rem; padding-left: 0.25rem; }
+  .case-body > ul:not(.breakout) > li::marker,
+  .case-body > ol:not(.breakout) > li::marker { color: #c3cad6; }
+
+  .case-body strong { color: var(--color-charcoal); font-weight: 600; }
+
+  .case-body a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+  .case-body a:hover { color: var(--color-accent-hover); }
+
+  .case-body > blockquote {
+    border-left: 2px solid var(--color-accent-border);
+    padding-left: 1.25rem;
+    margin: 1.75rem 0;
+    color: var(--color-ink);
+    font-style: normal;
+  }
+
+  .case-body code {
+    font-family: var(--font-mono);
+    font-size: 0.8125em;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 0.25rem;
+    padding: 0.125em 0.375em;
+    color: var(--color-accent-hover);
+  }
+
+  .case-body pre {
+    background: var(--color-charcoal);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    overflow-x: auto;
+    margin: 1.75rem 0;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+  }
+  .case-body pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+  }
+
+  .case-body hr {
+    border: 0;
+    border-top: 1px solid var(--color-border);
+    margin: 3rem 0;
+  }
+
+  .case-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.75rem 0;
+    font-size: 0.9375rem;
+  }
+  .case-body th,
+  .case-body td {
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-ink);
+  }
+  .case-body th {
+    font-weight: 600;
+    color: var(--color-charcoal);
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
+  }
+</style>

@@ -1,0 +1,111 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../consts';
+
+const all = await getCollection('writing');
+const published = all
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => (b.data.pubDate?.getTime() ?? 0) - (a.data.pubDate?.getTime() ?? 0));
+const planned = all.filter((p) => p.data.draft).sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout
+  title="Writing"
+  description="Essays in progress on evaluation, guardrails, and what it takes to keep an AI system trustworthy in production."
+>
+  <section class="pt-16 pb-12 md:pt-24 md:pb-16">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <p class="t-eyebrow">Writing</p>
+      <h1 class="t-display mt-4">Notes from production</h1>
+      <p class="t-lede mt-6 max-w-[46rem]">
+        Everything worth writing about here came out of a system that was already running. These
+        are the pieces I am working on — each one from a specific project, and each one about
+        something that surprised me.
+      </p>
+    </div>
+  </section>
+
+  {
+    published.length > 0 && (
+      <section class="pb-16">
+        <div class="max-w-[1200px] mx-auto px-6">
+          <div class="grid md:grid-cols-2 gap-5" data-reveal-stagger>
+            {published.map((post) => (
+              <a href={`/writing/${post.id}/`} class="card p-6 block hover:-translate-y-0.5">
+                <h2 class="font-semibold text-lg text-charcoal">{post.data.title}</h2>
+                <p class="mt-2 text-sm text-muted leading-relaxed">{post.data.description}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="pb-20 md:pb-28">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <div class="flex items-baseline justify-between gap-4 mb-8">
+        <h2 class="t-h3">In progress</h2>
+        <span class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
+          {planned.length} planned
+        </span>
+      </div>
+
+      <ol class="space-y-4" data-reveal-stagger>
+        {
+          planned.map((post) => (
+            <li class="card p-6">
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3">
+                <span class="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
+                  <span class="w-1.5 h-1.5 rounded-full bg-muted/50" aria-hidden="true" />
+                  In progress
+                </span>
+                {post.data.sourceProject && (
+                  <span class="font-mono text-[11px] text-muted">
+                    from {post.data.sourceProject}
+                  </span>
+                )}
+              </div>
+              <h3 class="font-semibold text-lg text-charcoal">{post.data.title}</h3>
+              <p class="mt-2 t-body text-[0.9375rem]">{post.data.description}</p>
+              <div class="mt-4 flex flex-wrap gap-1.5">
+                {post.data.tags.map((tag) => (
+                  <span class="tech-tag">{tag}</span>
+                ))}
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+
+      <p class="mt-10 text-sm text-muted max-w-[46rem] leading-relaxed">
+        These are titles and arguments, not published posts — they are listed here because the
+        work behind them is real and the pieces are being written. When one goes up, it will
+        appear above with a link rather than a promise.
+      </p>
+    </div>
+  </section>
+
+  <section class="py-16 bg-surface border-t border-border">
+    <div class="max-w-[1200px] mx-auto px-6 text-center">
+      <h2 class="t-h3">Want to talk about any of these before I write them?</h2>
+      <p class="t-lede mt-4 mx-auto max-w-[38rem]">
+        I am more than happy to go into detail on any of this.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-4 justify-center">
+        <a href="/contact/" class="btn-primary">Get in touch</a>
+        <a
+          href={SITE.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-secondary">Follow on LinkedIn</a
+        >
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import '../../scripts/motion.ts';
+</script>

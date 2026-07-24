@@ -1,0 +1,195 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroVideo from '../components/HeroVideo.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import SupportingCard from '../components/SupportingCard.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import StatsBar from '../components/StatsBar.astro';
+import ScrollPinnedSection from '../components/ScrollPinnedSection.astro';
+
+import supportInboxPipeline from '../assets/diagrams/support-inbox-pipeline.png';
+import statusPagesArchitecture from '../assets/diagrams/status-pages-architecture.png';
+import assistantArchitecture from '../assets/diagrams/knowledge-assistant-architecture.png';
+import onboardingOrchestrator from '../assets/diagrams/onboarding-orchestrator.png';
+
+const caseStudies = (await getCollection('caseStudies', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const supporting = (await getCollection('supportingProjects')).sort(
+  (a, b) => a.data.order - b.data.order
+);
+
+const capabilities = [
+  {
+    title: 'Eval-driven development',
+    body: "Every system I ship has a way of telling me when it gets worse. Braintrust suites, golden-fixture harnesses, adversarial gate tests that have to fail on purpose, and one month where I graded 422 answers by hand.",
+    tags: ['Braintrust', 'Golden fixtures', 'LLM-as-judge'],
+    image: supportInboxPipeline,
+    imageAlt: 'An intake funnel feeding a confidence judge',
+    proofLabel: 'Support inbox agent',
+    proofHref: '/work/support-inbox-agent/',
+  },
+  {
+    title: 'Fail-closed guardrails',
+    body: 'When the output is money-adjacent or public, the interesting question is what happens when something goes wrong. Template-first generation, deterministic guards, verify-then-publish, and kill switches that default to off.',
+    tags: ['Guardrails', 'PII guards', 'Shadow runs'],
+    image: statusPagesArchitecture,
+    imageAlt: 'Three flows and a five-stage fail-closed cleaner',
+    proofLabel: 'Customer status pages',
+    proofHref: '/work/customer-status-pages/',
+  },
+  {
+    title: 'Human-in-the-loop by design',
+    body: 'Review queues, interception windows, escalation routing to the person who actually owns the answer, and feedback loops that turn corrections into training examples. Automation that people trust because they can stop it.',
+    tags: ['Review dashboards', 'Escalation', 'Slack'],
+    image: assistantArchitecture,
+    imageAlt: 'Retrieval architecture with escalation and feedback paths',
+    proofLabel: 'Internal knowledge assistant',
+    proofHref: '/work/internal-knowledge-assistant/',
+  },
+  {
+    title: 'Full-cycle systems integration',
+    body: 'The unglamorous half of forward-deployed work: Salesforce, four internal services with three auth schemes, an API quota already at 91%, and orchestration that fails soft so a person is never stranded.',
+    tags: ['Salesforce', 'Next.js', 'Supabase'],
+    image: onboardingOrchestrator,
+    imageAlt: 'The fail-soft onboarding orchestrator',
+    proofLabel: 'Onboarding platform',
+    proofHref: '/work/onboarding-platform/',
+  },
+];
+
+const stats = [
+  {
+    value: '2',
+    label: 'AI agents in production',
+    footnote: 'Support inbox and internal Slack',
+  },
+  {
+    value: '1,090',
+    label: 'Questions answered by the internal assistant',
+    footnote: 'Eleven weeks, Apr–Jul 2026',
+  },
+  {
+    value: '208',
+    label: 'Support emails processed',
+    footnote: 'One measured week, June 2026',
+  },
+  {
+    value: '184',
+    label: 'Automated tests across shipped repos',
+    footnote: '87 on the payments agent, 97 on the onboarding wizard',
+  },
+];
+---
+
+<BaseLayout>
+  {/* ===================== HERO ===================== */}
+  <section class="relative overflow-hidden pt-16 pb-20 md:pt-24 md:pb-28">
+    <div
+      class="absolute inset-0 pointer-events-none"
+      style="background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,91,255,0.06) 0%, transparent 70%);"
+      aria-hidden="true"
+    >
+    </div>
+
+    <div class="max-w-[1200px] mx-auto px-6 relative">
+      <div class="grid md:grid-cols-2 gap-14 md:gap-12 items-center">
+        <div>
+          <p class="t-eyebrow hero-seq hero-seq-1">AI Engineer · Builder · Ships to Production</p>
+          <h1 class="t-display mt-4 hero-seq hero-seq-2">
+            I build AI systems that <span class="gradient-text gradient-sweep"
+              >survive production</span
+            >.
+          </h1>
+          <p class="t-lede mt-6 hero-seq hero-seq-3">
+            Agents, evals, fail-closed guardrails, and the human-in-the-loop design that keeps
+            them trustworthy. Two of them run in production at FieldPulse today.
+          </p>
+          <div class="mt-9 flex flex-wrap gap-4 hero-seq hero-seq-4">
+            <a href="/work/" class="btn-primary">View my work</a>
+            <a href="/contact/" class="btn-secondary">Get in touch</a>
+          </div>
+        </div>
+
+        <div class="flex justify-center">
+          <HeroVideo />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ===================== FEATURED WORK ===================== */}
+  <section class="py-20 md:py-28 bg-surface border-t border-border">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <SectionHeading
+        eyebrow="Selected work"
+        title="Systems that stayed up"
+        lede="Six projects, in the order I'd want them read. Every number on these pages is one I can point at in a repository or a report."
+        data-reveal
+      />
+
+      <div class="mt-12 grid md:grid-cols-2 gap-6" data-reveal-stagger>
+        {caseStudies.map((entry) => <ProjectCard entry={entry} />)}
+      </div>
+
+      <div class="mt-16" data-reveal>
+        <h3 class="t-h3">More work</h3>
+        <p class="mt-3 t-body text-muted max-w-[46rem]">
+          Smaller pieces that are worth the sentence but not the case study.
+        </p>
+        <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4" data-reveal-stagger>
+          {
+            supporting.map((p) => (
+              <SupportingCard
+                title={p.data.title}
+                blurb={p.data.blurb}
+                tags={p.data.tags}
+                link={p.data.link}
+              />
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ===================== CAPABILITIES ===================== */}
+  <section class="py-20 md:py-28">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <SectionHeading
+        eyebrow="What I bring"
+        title="The parts that make an AI system survivable"
+        lede="Anyone can get a model to produce something impressive once. These are the four things that decide whether it is still working, and still trusted, six months later."
+        data-reveal
+      />
+      <ScrollPinnedSection items={capabilities} />
+    </div>
+  </section>
+
+  {/* ===================== STATS ===================== */}
+  <StatsBar
+    stats={stats}
+    note="Measured numbers only. The assistant's figures come from its usage report and a hand-audit of every answer it gave in June 2026; the support agent's from a week of production traffic reviewed line by line. Where a project has targets rather than results, its case study says so."
+  />
+
+  {/* ===================== CTA ===================== */}
+  <section class="py-20 md:py-28">
+    <div class="max-w-[1200px] mx-auto px-6 text-center" data-reveal>
+      <h2 class="t-h2">Let's build something that stays up</h2>
+      <p class="t-lede mt-5 mx-auto max-w-[38rem]">
+        If you are putting an AI system in front of real users and want it to hold, that is the
+        work I do.
+      </p>
+      <div class="mt-9 flex flex-wrap gap-4 justify-center">
+        <a href="/contact/" class="btn-primary">Get in touch</a>
+        <a href="/about/" class="btn-secondary">More about me</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import '../scripts/motion.ts';
+</script>

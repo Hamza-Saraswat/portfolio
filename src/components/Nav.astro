@@ -1,0 +1,138 @@
+---
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/work/', label: 'Work' },
+  { href: '/about/', label: 'About' },
+  { href: '/writing/', label: 'Writing' },
+  { href: '/contact/', label: 'Contact' },
+];
+
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/' ? path === '/' : path.startsWith(href);
+---
+
+<header
+  id="site-nav"
+  class="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-transparent transition-[border-color,box-shadow] duration-200"
+>
+  <nav
+    class="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between"
+    aria-label="Main"
+  >
+    <a href="/" class="font-semibold tracking-[-0.02em] text-charcoal text-[15px]">
+      Hamza Saraswat
+    </a>
+
+    <div class="hidden md:flex items-center gap-8">
+      {
+        links.slice(1, 5).map((link) => (
+          <a
+            href={link.href}
+            aria-current={isActive(link.href) ? 'page' : undefined}
+            class:list={[
+              'text-sm transition-colors',
+              isActive(link.href)
+                ? 'text-accent font-medium'
+                : 'text-muted hover:text-charcoal',
+            ]}
+          >
+            {link.label}
+          </a>
+        ))
+      }
+      <a href="/contact/" class="btn-primary !px-5 !py-2 !text-sm">Let's Talk</a>
+    </div>
+
+    <button
+      id="menu-toggle"
+      type="button"
+      class="md:hidden p-2 -mr-2 text-charcoal"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+    >
+      <svg
+        id="menu-icon-open"
+        class="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16"></path>
+      </svg>
+      <svg
+        id="menu-icon-close"
+        class="w-6 h-6 hidden"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18"></path>
+      </svg>
+    </button>
+  </nav>
+
+  <div
+    id="mobile-menu"
+    class="hidden md:hidden border-t border-border bg-white px-6 py-4 flex-col gap-1"
+  >
+    {
+      links.map((link) => (
+        <a
+          href={link.href}
+          aria-current={isActive(link.href) ? 'page' : undefined}
+          class:list={[
+            'py-2.5 text-sm',
+            isActive(link.href) ? 'text-accent font-medium' : 'text-muted',
+          ]}
+        >
+          {link.label}
+        </a>
+      ))
+    }
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById('menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+  const iconOpen = document.getElementById('menu-icon-open');
+  const iconClose = document.getElementById('menu-icon-close');
+  const nav = document.getElementById('site-nav');
+
+  function setMenu(open: boolean) {
+    if (!menu || !toggle || !iconOpen || !iconClose) return;
+    menu.classList.toggle('hidden', !open);
+    menu.classList.toggle('flex', open);
+    iconOpen.classList.toggle('hidden', open);
+    iconClose.classList.toggle('hidden', !open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+
+  toggle?.addEventListener('click', () => {
+    setMenu(menu?.classList.contains('hidden') ?? true);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !menu?.classList.contains('hidden')) {
+      setMenu(false);
+      toggle?.focus();
+    }
+  });
+
+  // Nav gains definition only once the page has scrolled.
+  const onScroll = () => {
+    if (!nav) return;
+    const scrolled = window.scrollY > 8;
+    nav.classList.toggle('border-border', scrolled);
+    nav.classList.toggle('shadow-[0_1px_3px_rgba(48,49,61,0.04)]', scrolled);
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+</script>

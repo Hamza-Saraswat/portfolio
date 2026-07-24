@@ -1,0 +1,84 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# ---------------------------------------------------------------
+# Redirects from the previous hand-written .html site.
+# These only fire when no file in dist/ matches, so they cannot
+# shadow a real page.
+# ---------------------------------------------------------------
+# No rule for /index.html: dist/index.html exists, so a non-forced redirect
+# would never fire. Netlify serves "/" canonically and each page carries a
+# canonical tag, which covers it.
+
+[[redirects]]
+  from = "/work.html"
+  to = "/work/"
+  status = 301
+
+[[redirects]]
+  from = "/about.html"
+  to = "/about/"
+  status = 301
+
+[[redirects]]
+  from = "/writing.html"
+  to = "/writing/"
+  status = 301
+
+[[redirects]]
+  from = "/contact.html"
+  to = "/contact/"
+  status = 301
+
+[[redirects]]
+  from = "/project-juju.html"
+  to = "/work/internal-knowledge-assistant/"
+  status = 301
+
+[[redirects]]
+  from = "/project-onboarding.html"
+  to = "/work/onboarding-platform/"
+  status = 301
+
+[[redirects]]
+  from = "/project-ai-adoption.html"
+  to = "/work/ai-adoption/"
+  status = 301
+
+# The Costbook pipeline was never put into production, so its case study
+# was removed rather than restated. Send its old URL to the work index.
+[[redirects]]
+  from = "/project-costbook.html"
+  to = "/work/"
+  status = 301
+
+# Orphaned early draft of the knowledge-assistant case study.
+[[redirects]]
+  from = "/project.html"
+  to = "/work/internal-knowledge-assistant/"
+  status = 301
+
+# ---------------------------------------------------------------
+# Caching. Astro fingerprints everything under /_astro, and the
+# hero media is versioned by hand.
+# ---------------------------------------------------------------
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/videos/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"

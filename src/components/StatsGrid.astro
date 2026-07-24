@@ -1,0 +1,25 @@
+---
+interface Stat {
+  value: string;
+  label: string;
+  footnote?: string;
+}
+
+interface Props {
+  stats: Stat[];
+}
+
+const { stats } = Astro.props;
+---
+
+<div class="my-10 breakout grid grid-cols-2 md:grid-cols-4 gap-4">
+  {
+    stats.map((stat) => (
+      <div class="card p-5">
+        <p class="font-mono text-2xl font-medium text-accent tabular-nums">{stat.value}</p>
+        <p class="mt-1.5 text-sm text-charcoal font-medium leading-snug">{stat.label}</p>
+        {stat.footnote && <p class="mt-1.5 text-xs text-muted leading-relaxed">{stat.footnote}</p>}
+      </div>
+    ))
+  }
+</div>

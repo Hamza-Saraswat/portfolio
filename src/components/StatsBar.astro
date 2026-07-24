@@ -1,0 +1,49 @@
+---
+interface Stat {
+  value: string;
+  label: string;
+  footnote?: string;
+}
+
+interface Props {
+  stats: Stat[];
+  note?: string;
+}
+
+const { stats, note } = Astro.props;
+---
+
+<section class="relative bg-charcoal">
+  {/* Gradient hairline */}
+  <div
+    class="absolute inset-x-0 top-0 h-px"
+    style="background: linear-gradient(90deg, transparent, #635bff 20%, #80e9ff 80%, transparent);"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="max-w-[1200px] mx-auto px-6 py-16 md:py-20">
+    <dl class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6" data-reveal-stagger>
+      {
+        stats.map((stat) => (
+          <div>
+            <dd
+              class="font-mono text-3xl md:text-4xl font-medium gradient-text tabular-nums"
+              data-countup={stat.value}
+            >
+              {stat.value}
+            </dd>
+            <dt class="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-white/60 leading-relaxed">
+              {stat.label}
+            </dt>
+            {stat.footnote && (
+              <p class="mt-1.5 text-[11px] text-white/40 leading-relaxed">{stat.footnote}</p>
+            )}
+          </div>
+        ))
+      }
+    </dl>
+
+    {note && <p class="mt-10 text-xs text-white/40 max-w-[46rem] leading-relaxed">{note}</p>}
+  </div>
+</section>
