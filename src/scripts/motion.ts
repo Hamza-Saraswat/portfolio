@@ -9,13 +9,24 @@ document.documentElement.setAttribute('data-motion-ready', '');
 
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/* ---------- Scroll reveals ---------- */
+/* ---------- Scroll reveals ----------
+ * The reveal is decoration; the content is the point. Anything that starts
+ * hidden must have more than one way to become visible again, because the
+ * failure mode here is a blank page.
+ *
+ * IntersectionObserver callbacks do not fire while a page is not being
+ * rendered — a background tab, an occluded window, a headless capture. That
+ * is normally harmless, but it means "the observer fired" cannot be the only
+ * path to visible.
+ */
 function initReveals() {
   const targets = document.querySelectorAll('[data-reveal], [data-reveal-stagger]');
   if (!targets.length) return;
 
+  const revealAll = () => targets.forEach((el) => el.classList.add('is-visible'));
+
   if (reducedMotion) {
-    targets.forEach((el) => el.classList.add('is-visible'));
+    revealAll();
     return;
   }
 
@@ -31,6 +42,18 @@ function initReveals() {
   );
 
   targets.forEach((el) => observer.observe(el));
+
+  // Backstop: if anything is still hidden after a few seconds of the page
+  // being visible, show it. Covers a browser where the observer never fires.
+  let elapsed = 0;
+  const tick = window.setInterval(() => {
+    if (document.visibilityState !== 'visible') return; // don't burn the budget in a background tab
+    elapsed += 500;
+    if (elapsed < 3000) return;
+    window.clearInterval(tick);
+    revealAll();
+    observer.disconnect();
+  }, 500);
 }
 
 /* ---------- Pinned capability section ---------- */
