@@ -15,7 +15,7 @@ nothing gets stated as a measured result when it was a target.
 
 ## 1. I Hand-Reviewed All 422 of My AI Bot's June Answers
 
-**Source:** Juju · **Angle:** measurement integrity
+**Source:** Internal knowledge assistant · **Angle:** measurement integrity
 
 The strongest piece in the list, because almost nobody publishes this.
 
@@ -38,7 +38,7 @@ The strongest piece in the list, because almost nobody publishes this.
 
 ## 2. The LLM Never Writes the Email
 
-**Source:** Jarvis · **Angle:** architecture for high-stakes automation
+**Source:** Payments operations agent · **Angle:** architecture for high-stakes automation
 
 - Set the stakes: payment notices, where a wrong dollar amount or a leaked
   customer name is a different class of failure from a slightly-off support
@@ -58,7 +58,7 @@ The strongest piece in the list, because almost nobody publishes this.
 
 ## 3. Five Stages of Fail-Closed
 
-**Source:** Relay · **Angle:** publishing LLM output safely
+**Source:** Customer status pages · **Angle:** publishing LLM output safely
 
 - The problem: rewriting internal support notes into something safe for a public
   page that has no login.
@@ -78,7 +78,7 @@ The strongest piece in the list, because almost nobody publishes this.
 
 ## 4. A Second Model Decides Whether the First Gets to Send
 
-**Source:** Email Support Agent · **Angle:** calibration
+**Source:** Support inbox agent · **Angle:** calibration
 
 - Self-reported confidence from a language model is worth nothing, and why that
   is predictable rather than surprising.
@@ -114,7 +114,7 @@ The strongest piece in the list, because almost nobody publishes this.
 
 ## 6. The Bakeoff That Made Me Rebuild Our Bot
 
-**Source:** Juju · **Angle:** architecture decisions
+**Source:** Internal knowledge assistant · **Angle:** architecture decisions
 
 - The maintenance bill on a working RAG pipeline: embeddings drifting from
   weekly-changing docs, reranker quotas, upstream model swaps.
@@ -132,7 +132,7 @@ The strongest piece in the list, because almost nobody publishes this.
 
 ## 7. Your Test Email Isn't Production
 
-**Source:** Jarvis · **Angle:** testing
+**Source:** Payments operations agent · **Angle:** testing
 
 - The finding: a byte-identical email body classified differently depending only
   on the sender address.

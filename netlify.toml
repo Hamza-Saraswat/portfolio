@@ -36,12 +36,12 @@
 
 [[redirects]]
   from = "/project-juju.html"
-  to = "/work/juju/"
+  to = "/work/internal-knowledge-assistant/"
   status = 301
 
 [[redirects]]
   from = "/project-onboarding.html"
-  to = "/work/onboarding/"
+  to = "/work/onboarding-platform/"
   status = 301
 
 [[redirects]]
@@ -56,10 +56,10 @@
   to = "/work/"
   status = 301
 
-# Orphaned early draft of the Juju case study.
+# Orphaned early draft of the knowledge-assistant case study.
 [[redirects]]
   from = "/project.html"
-  to = "/work/juju/"
+  to = "/work/internal-knowledge-assistant/"
   status = 301
 
 # ---------------------------------------------------------------
