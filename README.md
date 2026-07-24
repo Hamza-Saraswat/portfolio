@@ -41,9 +41,41 @@ node scripts/build-brand-assets.mjs  # favicons + OG card -> public/
 
 The `.excalidraw` sources for the older diagrams stay local and are gitignored.
 
+## Adding a headshot
+
+Save an image at `src/assets/headshot.jpg` (`.png`, `.webp` and `.jpeg` also
+work) and it appears at the top of `/about/`, resized and converted. With no
+file there the page stays text-led — there is no placeholder box to remove.
+
 ## Deploying
 
 `netlify.toml` holds the build command, Node version, the redirect map from the
-previous hand-written `.html` site, and cache headers. The contact form uses
-Netlify Forms, which requires form detection to be enabled once in the Netlify
-dashboard.
+previous hand-written `.html` site, and cache headers.
+
+First deploy, in order:
+
+1. **Link the repository** in the Netlify dashboard — Site configuration →
+   Build & deploy → Link repository → `Hamza-Saraswat/portfolio`. Until the site
+   is Git-linked, `netlify.toml` is never read, so neither the build command nor
+   any of the redirects take effect. If the site was originally created by
+   dragging a folder in, this step is required.
+2. **Enable form detection** — Forms → enable. Netlify scans the built HTML at
+   deploy time; without this the contact form posts into nothing.
+3. **Push the branch.** A linked site builds a deploy preview automatically.
+4. **Check the preview** before merging:
+
+   ```bash
+   # every old URL should answer 301 with the new location
+   for p in work.html about.html writing.html contact.html \
+            project.html project-juju.html project-onboarding.html \
+            project-ai-adoption.html project-costbook.html; do
+     curl -sI "$PREVIEW_URL/$p" | awk -v p="$p" '/^HTTP/{c=$2} /^location/{print p, c, $2}'
+   done
+   ```
+
+   Then submit the contact form once and confirm it lands under Forms.
+5. **Merge to `main`** to publish, and re-run the loop above against
+   `https://hamza-saraswat.com`.
+
+Rollback is one click — Deploys → the previous build → Publish deploy. The
+pre-migration commit is also tagged `pre-astro-migration`.
