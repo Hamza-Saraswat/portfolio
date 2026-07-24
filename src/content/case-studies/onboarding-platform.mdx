@@ -1,0 +1,104 @@
+---
+title: Customer Onboarding Platform
+tagline: Salesforce closed-won to a configured account, self-serve, with an orchestrator that never strands the customer.
+summary: A guided setup wizard that provisions real FieldPulse accounts across four internal services, built so a downstream failure leaves an audit row for an operator rather than a dead end for the customer.
+timeframe: Mar–Jul 2026
+status: production
+statusLabel: In production
+attribution: Three repositories. I led development on the wizard (86 of 107 commits, alongside the PM who owns the product), and built the link-generation API and the analytics dashboard.
+order: 5
+cardImage: ../../assets/diagrams/onboarding-orchestrator.png
+cardImageAlt: Diagram of the fail-soft orchestrator fanning out to nine service calls with audit rows for failures
+tags: ['Next.js', 'TypeScript', 'Salesforce', 'Supabase', 'Vitest', 'Agent-native build']
+stats:
+  - value: '97'
+    label: Unit tests
+  - value: '4'
+    label: Internal services integrated
+    footnote: Three different auth schemes
+  - value: '3'
+    label: Repositories shipped
+    footnote: Wizard, link API, analytics dashboard
+  - value: '0'
+    label: Failures that block a customer
+related: ['ai-adoption', 'customer-status-pages']
+---
+
+import Figure from '../../components/Figure.astro';
+import StepList from '../../components/StepList.astro';
+import orchestrator from '../../assets/diagrams/onboarding-orchestrator.png';
+import onboardingFlow from '../../assets/diagrams/onboarding-flow.png';
+
+## Context
+
+Every new FieldPulse customer needs their account configured before they can use it: team members, customer records, invoice settings, job workflows, custom forms. That configuration used to be done by an implementation specialist, by hand, for every account.
+
+It works, and it does not scale. It also puts a queue between signing a contract and getting value from the product, which is the worst possible place for a queue.
+
+## Problem
+
+Replacing a person with a wizard sounds like a form-building exercise. It is not, because at the end of the wizard something irreversible has to happen: a real account gets configured through a coordinated batch of API calls across four separate internal services, each with its own authentication scheme.
+
+Those calls can fail. A service can be down, a payload can be rejected, a timeout can fire. And the person who has just spent twenty minutes filling in their business details is sitting on the other side of it.
+
+The naive design — run the calls, throw on failure, show an error — is the wrong answer. It punishes the customer for an internal problem and loses everything they entered.
+
+## Approach
+
+<Figure
+  src={onboardingFlow}
+  alt="Onboarding flow from Salesforce closed-won through the wizard modules to a configured account"
+  caption="Closed-won in Salesforce produces a personalised link. The customer never sees a login screen."
+/>
+
+The flow starts in Salesforce. When a deal closes, an automation calls a small API that mints a session and returns a personalised link. The customer opens it, the token is exchanged for a session cookie, and they walk through the setup modules — each one checkpointing to the database as they go, so a closed tab is not a lost afternoon.
+
+Then they press Complete Setup, and the interesting part runs.
+
+## Architecture
+
+<Figure
+  src={orchestrator}
+  alt="The orchestrator running nine actions in fixed order, writing an audit row per job, with the session completing regardless"
+  caption="Nine calls, any of which can fail. The session completes either way."
+/>
+
+The orchestrator runs nine submission actions in a fixed, specified order. Every one of them is wrapped in a helper that does two things: it writes the outcome to an audit table keyed by session and job type, and **it never throws**.
+
+The session status is then set to complete unconditionally.
+
+That single decision is the platform's defining property. A failed invoice-settings call does not stop the customer from finishing, and does not lose their data. It leaves a row in the audit table with the raw response attached, and an operator picks it up. The customer is handed off into the product, already logged in, while the failure is worked on behind them.
+
+Because the audit rows are keyed by session and job type, a retry cannot run the same job twice. The guards read session state from the database rather than the cookie, so an already-completed session short-circuits, and the single-use SSO token is fetched once and cached rather than re-requested per call.
+
+Around the wizard sit two more services:
+
+**A link-generation API**, deployed separately so Salesforce integrates against a stable contract rather than the wizard's release cycle. It is idempotent by design: asking twice for a link for the same active company returns the same link rather than minting a second one.
+
+**A read-only analytics dashboard** over the same data, giving product, CS, implementation, and leadership visibility into the funnel — where sessions stall, which jobs fail, how long setup takes. It connects through a dedicated read-only database role, so a bug in a dashboard query cannot write to production data.
+
+### How it was built
+
+There is no LLM anywhere in this platform. It is systems integration, and the AI part is how it was built rather than what it does.
+
+The wizard was developed with fleets of parallel coding agents working in isolated git worktrees, governed by a written playbook in the repository and a phase-by-phase document trail. The analytics dashboard was specified as twenty-six self-contained tickets, each written to be executed by a coding agent, and built in about four days.
+
+That is not a shortcut around engineering discipline — it depends on it. Parallel agents are only safe when the tests are real, the tickets are genuinely independent, and the review gate is honest. The suite grew from 49 tests to 97 across the phases for exactly that reason.
+
+## Outcome
+
+The platform is in production, serving new customers through a public setup domain.
+
+What I can state plainly: three repositories shipped, 97 unit tests in the wizard, four internal services integrated across three authentication schemes, and an orchestrator design where no downstream failure blocks a customer.
+
+What I will not claim: this project has been reported internally against targets for time-to-value, support ticket volume, and satisfaction. Those are targets, not measured outcomes, and I have not personally verified post-launch numbers against them. Quoting them here as results would be inventing a finding.
+
+There was also a version of this that never shipped. An earlier prototype built the same wizard with stubbed API calls that returned mock success, and it was deliberately thrown away. It answered the questions that mattered — module sequence, session model, what the flow felt like — before anyone wrote a real integration. The prototype was the cheapest part of the project and it de-risked the expensive part.
+
+## What I'd do differently
+
+**Reconcile schema drift automatically.** Repository migrations and the deployed database drifted apart, and reconciling them by hand was tedious and error-prone. A check in the pipeline comparing the two would have caught it the day it happened.
+
+**Give operators a real interface to the failure queue sooner.** Fail-soft is only as good as the process that drains the queue. Audit rows shipped well before anything designed for reading them, which for a while meant the safety net depended on someone running a query.
+
+**Instrument for outcomes at launch, not after.** The dashboard measures the funnel — where sessions stall, which jobs fail. It does not measure whether onboarding got faster than the manual process it replaced, because nobody captured a clean baseline before the change. That is why this page has no before-and-after number, and it is the thing I would fix first.

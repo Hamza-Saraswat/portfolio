@@ -4,8 +4,12 @@
 # Diagram sources (kept local, exported PNGs are committed)
 *.excalidraw
 
-# Personal / source documents — never publish to the public repo
-Content/
+# Personal / source documents — never publish to the public repo.
+# Anchored with a leading slash so it matches only the folder at the repo
+# root. Unanchored, git matches a directory of this name at any depth, and
+# on a case-insensitive filesystem that silently swallows src/content/ —
+# the entire content layer of the site.
+/Content/
 *.docx
 *.doc
 *.pdf
