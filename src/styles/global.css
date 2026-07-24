@@ -322,20 +322,31 @@
   @view-transition { navigation: auto; }
 }
 
-/* Scroll-panel crossfade (pinned capability section). Opacity-only so it
-   is safe under reduced motion; the transform is layered on separately. */
-.scroll-panel {
+/* Scroll-panel crossfade (pinned capability section).
+   Without JS the first panel simply stays on screen and the rest are hidden,
+   so the section never renders as an empty column. The swap behaviour is
+   layered on only once JS is present to drive it. */
+.scroll-panel:not(:first-child) {
+  opacity: 0;
+  visibility: hidden;
+}
+
+html.js .scroll-panel {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.45s var(--ease-out-expo);
 }
-.scroll-panel.is-active {
+html.js .scroll-panel.is-active {
   opacity: 1;
   visibility: visible;
 }
+
 @media (prefers-reduced-motion: no-preference) {
-  .scroll-panel { transform: translateY(16px); transition: opacity 0.45s var(--ease-out-expo), transform 0.45s var(--ease-out-expo); }
-  .scroll-panel.is-active { transform: none; }
+  html.js .scroll-panel {
+    transform: translateY(16px);
+    transition: opacity 0.45s var(--ease-out-expo), transform 0.45s var(--ease-out-expo);
+  }
+  html.js .scroll-panel.is-active { transform: none; }
 }
 
 /* Utility: visually hidden but screen-reader accessible */

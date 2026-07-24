@@ -10,10 +10,9 @@
 # These only fire when no file in dist/ matches, so they cannot
 # shadow a real page.
 # ---------------------------------------------------------------
-[[redirects]]
-  from = "/index.html"
-  to = "/"
-  status = 301
+# No rule for /index.html: dist/index.html exists, so a non-forced redirect
+# would never fire. Netlify serves "/" canonically and each page carries a
+# canonical tag, which covers it.
 
 [[redirects]]
   from = "/work.html"
