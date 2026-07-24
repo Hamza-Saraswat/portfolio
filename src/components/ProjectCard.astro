@@ -1,0 +1,43 @@
+---
+import { Image } from 'astro:assets';
+import StatusPill from './StatusPill.astro';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entry: CollectionEntry<'caseStudies'>;
+}
+
+const { entry } = Astro.props;
+const { title, tagline, cardImage, cardImageAlt, tags, status, statusLabel, timeframe } =
+  entry.data;
+---
+
+<a
+  href={`/work/${entry.id}/`}
+  class="card group block overflow-hidden hover:-translate-y-0.5"
+>
+  <div class="aspect-[16/10] overflow-hidden bg-surface border-b border-border">
+    <Image
+      src={cardImage}
+      alt={cardImageAlt}
+      widths={[400, 640, 900]}
+      sizes="(min-width: 768px) 40vw, 92vw"
+      class="w-full h-full object-contain p-5 transition-transform duration-500 group-hover:scale-[1.03]"
+      loading="lazy"
+    />
+  </div>
+
+  <div class="p-6">
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <StatusPill status={status} label={statusLabel} />
+      <span class="font-mono text-[11px] text-muted shrink-0">{timeframe}</span>
+    </div>
+
+    <h3 class="font-semibold text-lg text-charcoal tracking-[-0.02em]">{title}</h3>
+    <p class="mt-2 text-sm text-muted leading-relaxed">{tagline}</p>
+
+    <div class="mt-4 flex flex-wrap gap-1.5">
+      {tags.slice(0, 4).map((tag) => <span class="tech-tag">{tag}</span>)}
+    </div>
+  </div>
+</a>

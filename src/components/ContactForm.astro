@@ -1,0 +1,50 @@
+---
+/**
+ * Netlify Forms. The form must exist in the prerendered HTML for Netlify's
+ * build-time scan to detect it, which it does — this is a static page.
+ * `bot-field` is the honeypot; real people never see or fill it.
+ */
+const inputClass =
+  'w-full rounded-lg border border-border bg-white px-4 py-3 text-sm text-charcoal placeholder:text-muted/70 transition-colors focus:border-accent focus:outline-none focus-visible:outline-none';
+---
+
+<form
+  name="contact"
+  method="POST"
+  action="/contact/thanks/"
+  data-netlify="true"
+  netlify-honeypot="bot-field"
+  class="space-y-5"
+>
+  <input type="hidden" name="form-name" value="contact" />
+
+  <p class="hidden">
+    <label>
+      Don't fill this out if you're human: <input name="bot-field" tabindex="-1" autocomplete="off" />
+    </label>
+  </p>
+
+  <div>
+    <label for="name" class="block text-sm font-medium text-charcoal mb-2">Name</label>
+    <input type="text" id="name" name="name" required autocomplete="name" class={inputClass} />
+  </div>
+
+  <div>
+    <label for="email" class="block text-sm font-medium text-charcoal mb-2">Email</label>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      required
+      autocomplete="email"
+      class={inputClass}
+    />
+  </div>
+
+  <div>
+    <label for="message" class="block text-sm font-medium text-charcoal mb-2">Message</label>
+    <textarea id="message" name="message" rows="5" required class={inputClass}></textarea>
+  </div>
+
+  <button type="submit" class="btn-primary w-full sm:w-auto">Send message</button>
+</form>

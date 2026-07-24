@@ -1,0 +1,106 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+export interface Capability {
+  title: string;
+  body: string;
+  tags: string[];
+  image: ImageMetadata;
+  imageAlt: string;
+  proofLabel: string;
+  proofHref: string;
+}
+
+interface Props {
+  items: Capability[];
+}
+
+const { items } = Astro.props;
+---
+
+<div data-pinned class="mt-14">
+  {/* ---------- Desktop: sticky panel driven by scroll triggers ---------- */}
+  <div class="hidden md:grid md:grid-cols-2 md:gap-16 lg:gap-20">
+    <div role="tablist" aria-label="Capabilities" class="relative">
+      {
+        items.map((item, i) => (
+          <div data-pinned-trigger data-index={i} class="min-h-[50vh] flex items-center">
+            <button
+              type="button"
+              data-pinned-rail
+              role="tab"
+              aria-selected={i === 0 ? 'true' : 'false'}
+              class="text-left w-full border-l-2 border-transparent pl-6 py-4 transition-colors duration-300 text-muted"
+            >
+              <h3 class="t-h3 text-current">{item.title}</h3>
+              <p class="mt-3 t-body text-muted">{item.body}</p>
+              <div class="mt-4 flex flex-wrap gap-1.5">
+                {item.tags.map((tag) => (
+                  <span class="tech-tag">{tag}</span>
+                ))}
+              </div>
+            </button>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="relative">
+      <div class="sticky top-28 h-[420px]">
+        {
+          items.map((item, i) => (
+            <div
+              data-pinned-panel
+              class:list={['scroll-panel absolute inset-0 flex flex-col', i === 0 && 'is-active']}
+            >
+              <div class="flex-1 card overflow-hidden flex items-center justify-center bg-surface p-5">
+                <Image
+                  src={item.image}
+                  alt={item.imageAlt}
+                  widths={[500, 800, 1100]}
+                  sizes="(min-width: 768px) 45vw, 90vw"
+                  class="max-h-full w-auto object-contain"
+                  loading="lazy"
+                />
+              </div>
+              <a
+                href={item.proofHref}
+                class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-accent hover:text-accent-hover transition-colors"
+              >
+                <span class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
+                  Proof
+                </span>
+                {item.proofLabel}
+              </a>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  {/* ---------- Mobile: plain stacked cards ---------- */}
+  <div class="md:hidden space-y-6">
+    {
+      items.map((item) => (
+        <div class="card p-6" data-reveal>
+          <h3 class="font-semibold text-lg text-charcoal">{item.title}</h3>
+          <p class="mt-2 t-body">{item.body}</p>
+          <div class="mt-4 flex flex-wrap gap-1.5">
+            {item.tags.map((tag) => (
+              <span class="tech-tag">{tag}</span>
+            ))}
+          </div>
+          <a
+            href={item.proofHref}
+            class="mt-4 inline-flex items-center gap-2 text-sm font-medium text-accent"
+          >
+            <span class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">Proof</span>
+            {item.proofLabel}
+          </a>
+        </div>
+      ))
+    }
+  </div>
+</div>

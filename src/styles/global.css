@@ -1,0 +1,352 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* ============================================================
+   Design tokens — carried over from the original site, plus
+   `ink` (long-form body text) and `cyan` (names the gradient end).
+   ============================================================ */
+@theme {
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --color-accent: #635bff;
+  --color-accent-hover: #5046e5;
+  --color-accent-light: #f0f0ff;
+  --color-accent-border: #d9d7ff;
+  --color-charcoal: #30313d;
+  --color-ink: #3f4152;
+  --color-muted: #6b7280;
+  --color-surface: #f6f9fc;
+  --color-border: #e3e8ee;
+  --color-success: #00d4aa;
+  --color-cyan: #80e9ff;
+
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+@layer base {
+  :root {
+    color-scheme: light;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root { scroll-behavior: auto; }
+  }
+
+  body {
+    background-color: #ffffff;
+    color: var(--color-charcoal);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+  p { text-wrap: pretty; }
+
+  ::selection {
+    background: var(--color-accent-light);
+    color: var(--color-accent-hover);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Thin scrollbar, matching the original site */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: var(--color-surface); }
+  ::-webkit-scrollbar-thumb {
+    background: #d5dbe4;
+    border-radius: 6px;
+    border: 2px solid var(--color-surface);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #c3cad6; }
+}
+
+/* ============================================================
+   Type scale
+   ============================================================ */
+@layer components {
+  .t-display {
+    font-size: clamp(2.5rem, 5.5vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+  }
+
+  .t-h2 {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+
+  .t-h3 {
+    font-size: clamp(1.375rem, 2.5vw, 1.75rem);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  .t-lede {
+    font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+    line-height: 1.6;
+    color: var(--color-muted);
+  }
+
+  .t-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  /* Long-form body copy: `ink`, never the lighter `muted`. */
+  .t-body {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-ink);
+  }
+
+  /* ---------- Gradient text ---------- */
+  .gradient-text {
+    background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-cyan) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* ---------- Tech tag ---------- */
+  .tech-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1;
+    padding: 0.375rem 0.625rem;
+    border-radius: 0.375rem;
+    background: var(--color-accent-light);
+    border: 1px solid var(--color-accent-border);
+    color: var(--color-accent-hover);
+    white-space: nowrap;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    border-radius: 0.5rem;
+    background: var(--color-accent);
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(48, 49, 61, 0.08), 0 2px 8px rgba(99, 91, 255, 0.24);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .btn-primary:hover {
+    background: var(--color-accent-hover);
+    box-shadow: 0 1px 2px rgba(48, 49, 61, 0.1), 0 4px 14px rgba(99, 91, 255, 0.3);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    color: var(--color-charcoal);
+    font-size: 0.875rem;
+    font-weight: 600;
+    background: #fff;
+    transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn-secondary:hover {
+    border-color: var(--color-accent-border);
+    color: var(--color-accent);
+    box-shadow: 0 1px 2px rgba(48, 49, 61, 0.06);
+  }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: #fff;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    transition: transform 0.25s var(--ease-out-expo), box-shadow 0.25s ease,
+      border-color 0.25s ease;
+  }
+  .card:hover {
+    border-color: var(--color-accent-border);
+    box-shadow: 0 1px 2px rgba(48, 49, 61, 0.06), 0 8px 24px rgba(48, 49, 61, 0.08);
+  }
+
+  /* ---------- Reading column ----------
+     Text stays at a comfortable measure; media and data break out wider.
+     This inversion (narrow text, wide figures) is what makes long-form
+     pages read as editorial rather than as a cramped blog post. */
+  .prose-column {
+    max-width: 46rem;
+    margin-inline: auto;
+  }
+
+  .breakout {
+    width: min(1000px, calc(100vw - 3rem));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* ---------- Prose (writing articles) ---------- */
+  .prose-site {
+    --tw-prose-body: var(--color-ink);
+    --tw-prose-headings: var(--color-charcoal);
+    --tw-prose-links: var(--color-accent);
+    --tw-prose-bold: var(--color-charcoal);
+    --tw-prose-quotes: var(--color-ink);
+    --tw-prose-quote-borders: var(--color-accent-border);
+    --tw-prose-bullets: #c3cad6;
+    --tw-prose-counters: var(--color-muted);
+    --tw-prose-captions: var(--color-muted);
+    --tw-prose-code: var(--color-accent-hover);
+    --tw-prose-hr: var(--color-border);
+    --tw-prose-th-borders: var(--color-border);
+    --tw-prose-td-borders: var(--color-border);
+  }
+}
+
+/* ============================================================
+   Motion
+   Every animated initial state lives INSIDE the no-preference
+   query, so reduced-motion users and no-CSS-animation
+   environments always see fully-rendered content.
+   ============================================================ */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes card-in {
+    from { opacity: 0; transform: scale(0.96); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  @keyframes halo-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes gradient-sweep {
+    from { background-position: 200% 50%; }
+    to   { background-position: 0% 50%; }
+  }
+
+  /* ---- Hero entrance choreography (CSS only, no JS) ---- */
+  .hero-seq {
+    opacity: 0;
+    animation: rise-in 0.6s var(--ease-out-expo) forwards;
+  }
+  .hero-seq-1 { animation-delay: 0ms; }
+  .hero-seq-2 { animation-delay: 80ms; }
+  .hero-seq-3 { animation-delay: 160ms; }
+  .hero-seq-4 { animation-delay: 240ms; }
+
+  .hero-card {
+    opacity: 0;
+    animation: card-in 0.7s var(--ease-out-expo) 200ms forwards;
+  }
+
+  .hero-halo {
+    opacity: 0;
+    animation: halo-in 0.9s ease-out 500ms forwards;
+  }
+
+  /* One-time sweep across the gradient headline span. */
+  .gradient-sweep {
+    background-size: 200% 100%;
+    animation: gradient-sweep 1.2s var(--ease-out-expo) 200ms both;
+  }
+
+  /* ---- Scroll reveals (JS-gated so no-JS renders everything) ---- */
+  html.js [data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.55s var(--ease-out-expo),
+      transform 0.55s var(--ease-out-expo);
+  }
+  html.js [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  html.js [data-reveal-stagger] > * {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.55s var(--ease-out-expo),
+      transform 0.55s var(--ease-out-expo);
+  }
+  html.js [data-reveal-stagger].is-visible > * {
+    opacity: 1;
+    transform: none;
+  }
+  html.js [data-reveal-stagger].is-visible > *:nth-child(1) { transition-delay: 0ms; }
+  html.js [data-reveal-stagger].is-visible > *:nth-child(2) { transition-delay: 80ms; }
+  html.js [data-reveal-stagger].is-visible > *:nth-child(3) { transition-delay: 160ms; }
+  html.js [data-reveal-stagger].is-visible > *:nth-child(n + 4) { transition-delay: 240ms; }
+
+  /* ---- Live-status pulse ---- */
+  @keyframes status-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.55; transform: scale(0.86); }
+  }
+  .status-dot-live { animation: status-pulse 2s ease-in-out infinite; }
+
+  /* ---- Cross-document view transitions ---- */
+  @view-transition { navigation: auto; }
+}
+
+/* Scroll-panel crossfade (pinned capability section). Opacity-only so it
+   is safe under reduced motion; the transform is layered on separately. */
+.scroll-panel {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.45s var(--ease-out-expo);
+}
+.scroll-panel.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-panel { transform: translateY(16px); transition: opacity 0.45s var(--ease-out-expo), transform 0.45s var(--ease-out-expo); }
+  .scroll-panel.is-active { transform: none; }
+}
+
+/* Utility: visually hidden but screen-reader accessible */
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

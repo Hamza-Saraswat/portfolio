@@ -1,0 +1,26 @@
+---
+interface Props {
+  status: 'production' | 'pilot' | 'internal' | 'complete';
+  label: string;
+  class?: string;
+}
+
+const { status, label, class: className = '' } = Astro.props;
+
+const dotClass = {
+  production: 'bg-success status-dot-live',
+  pilot: 'bg-accent',
+  internal: 'bg-accent',
+  complete: 'bg-muted',
+}[status];
+---
+
+<span
+  class:list={[
+    'inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.08em] text-muted',
+    className,
+  ]}
+>
+  <span class:list={['w-1.5 h-1.5 rounded-full shrink-0', dotClass]} aria-hidden="true"></span>
+  {label}
+</span>
