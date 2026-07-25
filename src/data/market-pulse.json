@@ -1,0 +1,47 @@
+[
+  {
+    "id": "signalfire-state-of-talent-2026",
+    "title": "SignalFire State of Talent Report 2026",
+    "url": "https://www.signalfire.com/blog/signalfire-state-of-talent-report-2026",
+    "source": "SignalFire",
+    "takeaway": "AI/ML engineer share is up 39% since ChatGPT launched; forward-deployed engineers (+30%) are the fastest-growing customer-facing engineering role — the people who help companies buy, onboard, and actually use AI.",
+    "dateAdded": "2026-07-25",
+    "tags": ["report", "fde"]
+  },
+  {
+    "id": "perspective-state-of-fde-2026",
+    "title": "State of Forward Deployed Engineering 2026 (survey of 1,500 FDEs)",
+    "url": "https://getperspective.ai/blog/state-of-forward-deployed-engineering-2026-survey-report-1500-fdes",
+    "source": "Perspective AI",
+    "takeaway": "Survey spanning Anthropic, OpenAI, Palantir, Scale, Databricks, Sierra, Harvey, Glean and 140+ growth-stage companies. Defines the role's day-to-day and career paths; frontier-lab senior FDE median total comp reported at $485k.",
+    "dateAdded": "2026-07-25",
+    "tags": ["report", "fde"]
+  },
+  {
+    "id": "perspective-fde-hiring-trends-2026",
+    "title": "2026 FDE Hiring Trends: What 1,000 Job Posts Reveal",
+    "url": "https://getperspective.ai/blog/2026-fde-hiring-trends-what-1000-job-posts-reveal",
+    "source": "Perspective AI",
+    "takeaway": "FDE postings grew ~800%; the industry's bottleneck has moved from modeling to deployment. The scarce skill is wiring models into real, often regulated, workflows — job descriptions are the leading indicator.",
+    "dateAdded": "2026-07-25",
+    "tags": ["analysis", "fde"]
+  },
+  {
+    "id": "paraform-fde-demand-2026",
+    "title": "Forward-Deployed Engineers: How Demand Grew 10x in 18 Months",
+    "url": "https://www.paraform.com/blog/forward-deployed-engineer-demand-quadrupled",
+    "source": "Paraform",
+    "takeaway": "FDE roles grew ~1,165% year over year. Useful hiring-side view of what companies screen for: customer-facing range plus the ability to ship integrations solo.",
+    "dateAdded": "2026-07-25",
+    "tags": ["analysis", "fde"]
+  },
+  {
+    "id": "plank-fde-job-tracker",
+    "title": "Plank FDE job market tracker (1,200+ live FDE roles)",
+    "url": "https://joinplank.com/fde-job-market",
+    "source": "Plank",
+    "takeaway": "Continuously updated index of live forward-deployed engineer openings — both a market barometer and a direct source the radar routine checks each run.",
+    "dateAdded": "2026-07-25",
+    "tags": ["tracker", "fde"]
+  }
+]

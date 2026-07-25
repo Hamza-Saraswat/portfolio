@@ -1,0 +1,251 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SectionHeading from '../../components/SectionHeading.astro';
+import StatsBar from '../../components/StatsBar.astro';
+import JobCard from '../../components/JobCard.astro';
+import JobStatusPill from '../../components/JobStatusPill.astro';
+
+const TRACK_LABEL = {
+  fde: 'Forward deployed',
+  'ai-eng': 'AI engineering',
+  'ai-product': 'AI product',
+  'technical-gtm': 'Technical GTM',
+};
+
+const SOURCE_LABEL = {
+  'nextplay-digest': 'Next Play digest',
+  'nextplay-talent-agent': 'Next Play agent',
+  'plank-fde-tracker': 'Plank tracker',
+  'hn-whos-hiring': "HN Who's Hiring",
+  'yc-waas': 'YC jobs',
+  'ai-jobs-net': 'ai-jobs.net',
+  'company-site': 'Company site',
+  other: 'Other',
+};
+
+// Status order for the tracked table: live things first, dead things last.
+const STATUS_ORDER = { reviewing: 0, applied: 1, new: 2, passed: 3, closed: 4 };
+
+const jobs = (await getCollection('jobs')).map((entry) => entry.data);
+const archived = (await getCollection('jobsArchive')).map((entry) => entry.data);
+const pulse = (await getCollection('marketPulse'))
+  .map((entry) => entry.data)
+  .sort((a, b) => b.dateAdded.localeCompare(a.dateAdded))
+  .slice(0, 10);
+
+const picks = jobs
+  .filter((job) => job.status === 'new' || job.status === 'reviewing')
+  .sort((a, b) => b.dateAdded.localeCompare(a.dateAdded) || a.company.localeCompare(b.company));
+
+const tracked = [...jobs].sort(
+  (a, b) =>
+    STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || b.dateAdded.localeCompare(a.dateAdded)
+);
+
+const applied = jobs.filter((job) => job.status === 'applied').length;
+const sourceCount = new Set([...jobs, ...archived].map((job) => job.source)).size;
+
+const stats = [
+  { value: String(picks.length), label: 'Open on the radar', footnote: 'New or under review' },
+  { value: String(applied), label: 'Applied' },
+  { value: String(jobs.length + archived.length), label: 'Tracked to date' },
+  { value: String(sourceCount), label: 'Sources feeding it' },
+];
+
+const baselineNote =
+  'Baseline, July 2026: across four Next Play Tuesday digests and one Talent Agent email, roughly 110 roles a month. Nine were forward-deployed-family, six were AI engineering, and about a dozen sat on the boundary — technical GTM, agent strategy, AI product. GTM and sales roles outnumbered engineering roughly three to one, which is the market shape this page exists to keep an eye on.';
+---
+
+<BaseLayout
+  title="Job radar"
+  description="A running list of roles worth a look, plus what the market is doing."
+  noindex={true}
+>
+  <section class="pt-16 pb-12 md:pt-24 md:pb-16">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <p class="t-eyebrow">Job radar</p>
+      <h1 class="t-display mt-4">What's open, and where it's heading</h1>
+      <p class="t-lede mt-6 max-w-[46rem]">
+        Forward-deployed, AI engineering, and AI product roles, gathered twice a week by a
+        scheduled routine and filtered down to the ones actually worth an afternoon. Statuses are
+        mine, kept by hand. Unlisted rather than secret: nothing here is linked or indexed, but
+        the page is public and the data lives in a public repo.
+      </p>
+    </div>
+  </section>
+
+  <StatsBar stats={stats} note={baselineNote} />
+
+  <section class="py-20 md:py-24">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <SectionHeading
+        eyebrow="Current picks"
+        title="Worth a look right now"
+        lede="Everything still new or under review, newest first."
+        data-reveal
+      />
+      {
+        picks.length > 0 ? (
+          <div class="mt-10 grid md:grid-cols-2 gap-6" data-reveal-stagger>
+            {picks.map((job) => (
+              <JobCard
+                company={job.company}
+                title={job.title}
+                url={job.url}
+                location={job.location}
+                stage={job.stage}
+                fitNotes={job.fitNotes}
+                trackLabel={TRACK_LABEL[job.track]}
+                tags={job.tags}
+                status={job.status}
+              />
+            ))}
+          </div>
+        ) : (
+          <p class="mt-10 text-sm text-muted">
+            Nothing open on the radar. The next run adds anything new it finds.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24 bg-surface border-t border-border">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <SectionHeading
+        eyebrow="Tracked"
+        title="Everything that came through"
+        lede="Including the passes. A role that was not a fit is still a data point about the market."
+        data-reveal
+      />
+      <div class="mt-10 overflow-x-auto" data-reveal>
+        <table class="w-full text-sm border-collapse min-w-[46rem]">
+          <thead>
+            <tr class="border-b border-border text-left">
+              <th class="py-3 pr-4 font-mono text-[11px] uppercase tracking-[0.08em] text-muted font-medium"
+                >Company</th
+              >
+              <th class="py-3 pr-4 font-mono text-[11px] uppercase tracking-[0.08em] text-muted font-medium"
+                >Role</th
+              >
+              <th class="py-3 pr-4 font-mono text-[11px] uppercase tracking-[0.08em] text-muted font-medium"
+                >Track</th
+              >
+              <th class="py-3 pr-4 font-mono text-[11px] uppercase tracking-[0.08em] text-muted font-medium"
+                >Location</th
+              >
+              <th class="py-3 pr-4 font-mono text-[11px] uppercase tracking-[0.08em] text-muted font-medium"
+                >Source</th
+              >
+              <th class="py-3 pr-4 font-mono text-[11px] uppercase tracking-[0.08em] text-muted font-medium"
+                >Added</th
+              >
+              <th class="py-3 font-mono text-[11px] uppercase tracking-[0.08em] text-muted font-medium"
+                >Status</th
+              >
+            </tr>
+          </thead>
+          <tbody>
+            {
+              tracked.map((job) => (
+                <tr class="border-b border-border align-top">
+                  <td class="py-3 pr-4 font-medium text-charcoal whitespace-nowrap">
+                    {job.company}
+                  </td>
+                  <td class="py-3 pr-4 text-ink">
+                    <a href={job.url} target="_blank" rel="noopener noreferrer">
+                      {job.title}
+                    </a>
+                  </td>
+                  <td class="py-3 pr-4 text-muted whitespace-nowrap">{TRACK_LABEL[job.track]}</td>
+                  <td class="py-3 pr-4 text-muted">{job.location}</td>
+                  <td class="py-3 pr-4 text-muted whitespace-nowrap">
+                    {SOURCE_LABEL[job.source]}
+                  </td>
+                  <td class="py-3 pr-4 font-mono text-[11px] text-muted whitespace-nowrap">
+                    {job.dateAdded}
+                  </td>
+                  <td class="py-3 whitespace-nowrap">
+                    <JobStatusPill status={job.status} />
+                    {job.statusNote && (
+                      <span class="block mt-1 text-[11px] text-muted">{job.statusNote}</span>
+                    )}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+      {
+        archived.length > 0 && (
+          <p class="mt-6 text-xs text-muted">
+            {archived.length} older {archived.length === 1 ? 'role is' : 'roles are'} archived out
+            of this table.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24">
+    <div class="max-w-[1200px] mx-auto px-6">
+      <SectionHeading
+        eyebrow="Market pulse"
+        title="What to read to stay ahead of it"
+        lede="Reports and trackers on where forward-deployed and AI engineering hiring is going."
+        data-reveal
+      />
+      <ul class="mt-10 space-y-8 max-w-[46rem]" data-reveal-stagger>
+        {
+          pulse.map((item) => (
+            <li>
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-semibold text-charcoal"
+              >
+                {item.title}
+              </a>
+              <p class="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
+                {item.source} · {item.dateAdded}
+              </p>
+              <p class="mt-2 text-sm text-muted leading-relaxed">{item.takeaway}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="py-20 md:py-24 bg-surface border-t border-border">
+    <div class="max-w-[1200px] mx-auto px-6" data-reveal>
+      <SectionHeading eyebrow="How this works" title="Where the entries come from" as="h2" />
+      <div class="mt-6 space-y-4 t-body">
+        <p>
+          A scheduled Claude routine runs Wednesday and Sunday mornings. It reads the Next Play
+          newsletter and Talent Agent emails out of my inbox, checks a handful of public boards —
+          Plank's forward-deployed tracker, the current Hacker News hiring thread, YC's job pages,
+          ai-jobs.net — and adds anything that matches the profile it has been given, with a note
+          on why.
+        </p>
+        <p>
+          It only ever appends. It cannot change a status, delete an entry, or reorder the list;
+          those are mine to edit. Every entry has to trace back to a posting the routine actually
+          opened, and the data files are schema-checked, so a malformed entry fails the build
+          instead of quietly publishing something wrong.
+        </p>
+        <p>
+          It does not touch LinkedIn or anything behind a login, which is a real gap in coverage
+          rather than a design choice.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import '../../scripts/motion.ts';
+</script>

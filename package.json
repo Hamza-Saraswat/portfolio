@@ -5,9 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/validate-radar.mjs && astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "validate:radar": "node scripts/validate-radar.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.3",
