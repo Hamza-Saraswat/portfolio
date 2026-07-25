@@ -1,0 +1,354 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: 'JetBrains Mono';
+        src: url('./fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2');
+        font-weight: 400;
+      }
+      @font-face {
+        font-family: 'JetBrains Mono';
+        src: url('./fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2');
+        font-weight: 500;
+      }
+      @font-face {
+        font-family: 'Inter';
+        src: url('./fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+        font-weight: 100 900;
+      }
+
+      :root {
+        --bg: #14151c;
+        --surface: #1c1e29;
+        --line: #2b2e3d;
+        --accent: #635bff;
+        --cyan: #80e9ff;
+        --success: #00d4aa;
+        --text: #e8eaf2;
+        --muted: #868ba1;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      #root {
+        position: relative;
+        background: var(--bg);
+        overflow: hidden;
+        font-family: 'JetBrains Mono', monospace;
+      }
+
+      /* Faint grid, so the dark field is not dead space */
+      .grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+
+      .glow {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(90px);
+      }
+      .glow-a { width: 620px; height: 620px; left: -160px; top: 380px; background: rgba(99, 91, 255, 0.42); }
+      .glow-b { width: 520px; height: 520px; right: -140px; top: 700px; background: rgba(128, 233, 255, 0.20); }
+
+      /* ---------------- terminal ---------------- */
+      .term {
+        position: absolute;
+        left: 64px;
+        top: 96px;
+        width: 832px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      }
+      .term-bar {
+        height: 52px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 20px;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .dot { width: 13px; height: 13px; border-radius: 50%; }
+      .term-title {
+        margin-left: 12px;
+        font-size: 21px;
+        color: var(--muted);
+        letter-spacing: 0.02em;
+      }
+      .term-body { padding: 26px 28px 30px; font-size: 27px; line-height: 1.65; }
+
+      .prompt { color: var(--accent); }
+      .cmd { color: var(--text); }
+      .caret {
+        display: inline-block;
+        width: 13px;
+        height: 28px;
+        background: var(--cyan);
+        vertical-align: -5px;
+        margin-left: 3px;
+      }
+      .log { color: var(--muted); opacity: 0; }
+      .log .ok { color: var(--success); }
+      .log .tag { color: var(--accent); }
+
+      /* ---------------- graph ---------------- */
+      .graph { position: absolute; inset: 0; }
+
+      .node {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        text-align: center;
+      }
+      .node-box {
+        width: 116px;
+        height: 116px;
+        border-radius: 26px;
+        border: 2px solid;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        background: var(--surface);
+      }
+      .node-box svg { width: 46px; height: 46px; }
+      .node-label {
+        margin-top: 14px;
+        font-size: 22px;
+        letter-spacing: 0.04em;
+        /* Brighter than --muted: these sit over the glows, and the whole
+           frame is displayed at roughly 420px wide on the site. */
+        color: #c3c8d8;
+      }
+
+      .edge {
+        position: absolute;
+        height: 2px;
+        transform-origin: left center;
+        opacity: 0.55;
+      }
+
+      .pulse {
+        position: absolute;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: var(--cyan);
+        box-shadow: 0 0 16px 4px rgba(128, 233, 255, 0.55);
+        opacity: 0;
+      }
+
+      /* ---------------- status ---------------- */
+      .status {
+        position: absolute;
+        left: 50%;
+        bottom: 44px;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 16px 30px;
+        border: 1px solid rgba(0, 212, 170, 0.32);
+        border-radius: 999px;
+        background: rgba(0, 212, 170, 0.07);
+        opacity: 0;
+        white-space: nowrap;
+      }
+      .status-dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 12px 3px rgba(0, 212, 170, 0.45);
+      }
+      .status-text {
+        font-size: 23px;
+        letter-spacing: 0.14em;
+        color: var(--success);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div
+      id="root"
+      data-composition-id="root"
+      data-start="0"
+      data-duration="12"
+      data-width="960"
+      data-height="1200"
+    >
+      <div class="grid"></div>
+      <div class="glow glow-a" id="glowA"></div>
+      <div class="glow glow-b" id="glowB"></div>
+
+      <!-- terminal -->
+      <div class="term" id="term">
+        <div class="term-bar">
+          <span class="dot" style="background:#ff5f57"></span>
+          <span class="dot" style="background:#febc2e"></span>
+          <span class="dot" style="background:#28c840"></span>
+          <span class="term-title">support-agent — deploy</span>
+        </div>
+        <div class="term-body">
+          <div>
+            <span class="prompt">$</span>
+            <span class="cmd" id="cmd"></span><span class="caret" id="caret"></span>
+          </div>
+          <div class="log" id="log1"><span class="tag">[build]</span> bundling 24 modules</div>
+          <div class="log" id="log2"><span class="tag">[evals]</span> 25/25 fixtures clean</div>
+          <div class="log" id="log3"><span class="tag">[guard]</span> fail-closed checks armed</div>
+          <div class="log" id="log4"><span class="ok">✓ deployed</span> · review queue live</div>
+        </div>
+      </div>
+
+      <!-- agent graph -->
+      <div class="graph" id="graph">
+        <div class="pulse" id="pulse"></div>
+      </div>
+
+      <!-- status -->
+      <div class="status" id="status">
+        <span class="status-dot"></span>
+        <span class="status-text">IN PRODUCTION</span>
+      </div>
+    </div>
+
+    <script>
+      /* ---------- graph layout, computed once (static; GSAP animates it) ---------- */
+      const NODES = [
+        { id: 'orch', x: 480, y: 640, label: 'ORCHESTRATOR', color: '#635bff',
+          icon: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/>' },
+        { id: 'retr', x: 250, y: 815, label: 'RETRIEVAL', color: '#80e9ff',
+          icon: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>' },
+        { id: 'guard', x: 710, y: 815, label: 'GUARDRAILS', color: '#ff9d5c',
+          icon: '<path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6z"/>' },
+        { id: 'human', x: 480, y: 960, label: 'HUMAN REVIEW', color: '#00d4aa',
+          icon: '<circle cx="12" cy="8" r="3.4"/><path d="M5.5 20a6.5 6.5 0 0113 0"/>' },
+      ];
+      const EDGES = [
+        ['orch', 'retr'],
+        ['orch', 'guard'],
+        ['retr', 'human'],
+        ['guard', 'human'],
+      ];
+
+      const graph = document.getElementById('graph');
+      const byId = {};
+      NODES.forEach((n) => (byId[n.id] = n));
+
+      // Edges first so they sit behind the nodes. Rotation is applied through
+      // GSAP rather than an inline transform — animating scaleX rewrites the
+      // whole transform, so a CSS rotate() here would be silently dropped.
+      const EDGE_ANGLES = [];
+      EDGES.forEach(([a, b], i) => {
+        const from = byId[a];
+        const to = byId[b];
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        EDGE_ANGLES[i] = (Math.atan2(dy, dx) * 180) / Math.PI;
+        const el = document.createElement('div');
+        el.className = 'edge';
+        el.id = 'edge' + i;
+        el.style.left = from.x + 'px';
+        el.style.top = from.y + 'px';
+        el.style.width = Math.hypot(dx, dy) + 'px';
+        el.style.background = `linear-gradient(90deg, ${from.color}, ${to.color})`;
+        graph.appendChild(el);
+      });
+
+      NODES.forEach((n) => {
+        const el = document.createElement('div');
+        el.className = 'node';
+        el.id = 'node-' + n.id;
+        el.style.left = n.x + 'px';
+        el.style.top = n.y + 'px';
+        el.innerHTML =
+          `<div class="node-box" style="border-color:${n.color};box-shadow:0 0 26px -6px ${n.color}66">` +
+          `<svg viewBox="0 0 24 24" fill="none" stroke="${n.color}" stroke-width="1.8" ` +
+          `stroke-linecap="round" stroke-linejoin="round">${n.icon}</svg></div>` +
+          `<div class="node-label">${n.label}</div>`;
+        graph.appendChild(el);
+      });
+
+      /* ---------- timeline ---------- */
+      const CMD = 'deploy support-agent --prod';
+      const cmdEl = document.getElementById('cmd');
+      const tl = gsap.timeline({ paused: true });
+
+      // Establish each edge's rotation inside the timeline, so it survives
+      // every seek and GSAP owns the full transform from the start.
+      EDGE_ANGLES.forEach((angle, i) => {
+        tl.set('#edge' + i, { rotation: angle, transformOrigin: 'left center', scaleX: 0 }, 0);
+      });
+
+      // The video loops forever on the page, so frame 0 and frame 12 have to
+      // be the same picture. The terminal shell and the glows are therefore
+      // present the whole time — only their contents animate. That also means
+      // the paused first frame is a composed image rather than black.
+
+      // 0.4–2.1  command types out, one character at a time
+      const perChar = 1.7 / CMD.length;
+      for (let i = 1; i <= CMD.length; i++) {
+        tl.call(() => { cmdEl.textContent = CMD.slice(0, i); }, null, 0.4 + i * perChar);
+      }
+      // Caret blinks for the full 12s in 0.6s halves — 20 of them, an even
+      // number, so it ends on the same phase it started and the loop is clean.
+      tl.to('#caret', { opacity: 0, duration: 0.6, repeat: 19, yoyo: true, ease: 'none' }, 0);
+
+      // 2.9–4.9  build log
+      ['#log1', '#log2', '#log3', '#log4'].forEach((sel, i) => {
+        tl.fromTo(sel, { opacity: 0, x: -10 },
+          { opacity: 1, x: 0, duration: 0.32, ease: 'power2.out' }, 2.4 + i * 0.5);
+      });
+
+      // 5.2–7.4  graph assembles: orchestrator, then branches, then human review
+      tl.fromTo('#node-orch', { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }, 5.2);
+      tl.to('#edge0', { scaleX: 1, duration: 0.42, ease: 'power2.inOut' }, 5.6);
+      tl.to('#edge1', { scaleX: 1, duration: 0.42, ease: 'power2.inOut' }, 5.6);
+      tl.fromTo('#node-retr', { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.7)' }, 5.95);
+      tl.fromTo('#node-guard', { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1, duration: 0.45, ease: 'back.out(1.7)' }, 6.1);
+      tl.to('#edge2', { scaleX: 1, duration: 0.42, ease: 'power2.inOut' }, 6.45);
+      tl.to('#edge3', { scaleX: 1, duration: 0.42, ease: 'power2.inOut' }, 6.55);
+      tl.fromTo('#node-human', { opacity: 0, scale: 0.7 },
+        { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }, 6.9);
+
+      // 7.5–9.6  a request travels orchestrator → guardrails → human review
+      const o = byId.orch, g = byId.guard, h = byId.human;
+      tl.set('#pulse', { x: o.x - 6.5, y: o.y - 6.5 }, 7.5);
+      tl.to('#pulse', { opacity: 1, duration: 0.2 }, 7.5);
+      tl.to('#pulse', { x: g.x - 6.5, y: g.y - 6.5, duration: 0.85, ease: 'power1.inOut' }, 7.7);
+      tl.to('#pulse', { x: h.x - 6.5, y: h.y - 6.5, duration: 0.85, ease: 'power1.inOut' }, 8.6);
+      tl.to('#pulse', { opacity: 0, duration: 0.3 }, 9.35);
+
+      // 9.5–10.4  status badge
+      tl.fromTo('#status', { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out' }, 9.5);
+
+      // 11.2–11.9  reset to the opening picture: the graph, the status badge
+      // and the log lines clear, while the terminal shell and glows stay put.
+      tl.to(['#graph', '#status', '#cmd', '#log1', '#log2', '#log3', '#log4'],
+        { opacity: 0, duration: 0.7, ease: 'power2.in' }, 11.2);
+      // Cleared well before the final frame rather than on it — the last frame
+      // lands at 11.967s, so a reset timed to the very end is a coin flip.
+      tl.call(() => { cmdEl.textContent = ''; }, null, 11.6);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['root'] = tl;
+    </script>
+  </body>
+</html>

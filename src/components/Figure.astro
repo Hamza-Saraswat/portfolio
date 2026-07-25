@@ -11,8 +11,16 @@ interface Props {
 const { src, alt, caption } = Astro.props;
 ---
 
+{/* The diagrams are wide and detailed, so the inline render is a preview.
+    Clicking opens the full-resolution version in a native dialog. */}
 <figure class="my-10 breakout">
-  <div class="card overflow-hidden bg-surface p-4 md:p-6">
+  <button
+    type="button"
+    class="figure-zoom card block w-full overflow-hidden bg-surface p-4 md:p-6 text-left"
+    data-figure-src={src.src}
+    data-figure-alt={alt}
+    aria-label={`Expand diagram: ${alt}`}
+  >
     <Image
       src={src}
       alt={alt}
@@ -21,6 +29,102 @@ const { src, alt, caption } = Astro.props;
       class="w-full h-auto"
       loading="lazy"
     />
-  </div>
-  {caption && <figcaption class="mt-3 text-sm text-muted text-center">{caption}</figcaption>}
+  </button>
+  {
+    caption && (
+      <figcaption class="mt-3 text-sm text-muted text-center">
+        {caption} <span class="text-muted/70">— click to enlarge</span>
+      </figcaption>
+    )
+  }
 </figure>
+
+<style>
+  .figure-zoom {
+    cursor: zoom-in;
+    padding: 1rem;
+  }
+  @media (min-width: 768px) {
+    .figure-zoom {
+      padding: 1.5rem;
+    }
+  }
+</style>
+
+{/* One dialog is shared by every figure on the page; it is injected once. */}
+<script>
+  function ensureDialog(): HTMLDialogElement {
+    let dialog = document.getElementById('figure-dialog') as HTMLDialogElement | null;
+    if (dialog) return dialog;
+
+    dialog = document.createElement('dialog');
+    dialog.id = 'figure-dialog';
+    dialog.className = 'figure-dialog';
+    dialog.innerHTML = `
+      <button type="button" class="figure-dialog__close" aria-label="Close">&times;</button>
+      <img alt="" />
+    `;
+    document.body.appendChild(dialog);
+
+    // Backdrop click closes; clicks on the image itself do not.
+    dialog.addEventListener('click', (event) => {
+      const target = event.target as HTMLElement;
+      if (target === dialog || target.classList.contains('figure-dialog__close')) {
+        dialog!.close();
+      }
+    });
+
+    return dialog;
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.figure-zoom').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      const dialog = ensureDialog();
+      const img = dialog.querySelector('img')!;
+      img.src = trigger.dataset.figureSrc ?? '';
+      img.alt = trigger.dataset.figureAlt ?? '';
+      dialog.showModal();
+    });
+  });
+</script>
+
+<style is:global>
+  .figure-dialog {
+    max-width: min(96vw, 1800px);
+    max-height: 92vh;
+    width: auto;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    background: #fff;
+    overflow: auto;
+  }
+  .figure-dialog::backdrop {
+    background: rgba(48, 49, 61, 0.72);
+  }
+  .figure-dialog img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+  }
+  .figure-dialog__close {
+    position: sticky;
+    top: 0.5rem;
+    left: calc(100% - 3rem);
+    z-index: 1;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: #fff;
+    color: var(--color-charcoal);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .figure-dialog__close:hover {
+    border-color: var(--color-accent-border);
+    color: var(--color-accent);
+  }
+</style>

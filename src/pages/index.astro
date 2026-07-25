@@ -3,7 +3,6 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroVideo from '../components/HeroVideo.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import SupportingCard from '../components/SupportingCard.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import StatsBar from '../components/StatsBar.astro';
 import ScrollPinnedSection from '../components/ScrollPinnedSection.astro';
@@ -17,14 +16,10 @@ const caseStudies = (await getCollection('caseStudies', ({ data }) => !data.draf
   (a, b) => a.data.order - b.data.order
 );
 
-const supporting = (await getCollection('supportingProjects')).sort(
-  (a, b) => a.data.order - b.data.order
-);
-
 const capabilities = [
   {
-    title: 'Eval-driven development',
-    body: "Every system I ship has a way of telling me when it gets worse. Braintrust suites, golden-fixture harnesses, adversarial gate tests that have to fail on purpose, and one month where I graded 422 answers by hand.",
+    title: 'Evals, not vibes',
+    body: 'Every system I ship has a way of telling me when it gets worse. Regression suites built from cases that actually happened, and gates I deliberately try to break — a check that has never failed has not been tested.',
     tags: ['Braintrust', 'Golden fixtures', 'LLM-as-judge'],
     image: supportInboxPipeline,
     imageAlt: 'An intake funnel feeding a confidence judge',
@@ -32,17 +27,17 @@ const capabilities = [
     proofHref: '/work/support-inbox-agent/',
   },
   {
-    title: 'Fail-closed guardrails',
-    body: 'When the output is money-adjacent or public, the interesting question is what happens when something goes wrong. Template-first generation, deterministic guards, verify-then-publish, and kill switches that default to off.',
-    tags: ['Guardrails', 'PII guards', 'Shadow runs'],
+    title: 'Fail closed, not open',
+    body: 'When money is involved, the question is not whether the model is good — it is what happens when it is wrong. On the payments agent the model never writes the message: it picks a template and fills in the blanks.',
+    tags: ['Guardrails', 'PII guards', 'Template-first'],
     image: statusPagesArchitecture,
     imageAlt: 'Three flows and a five-stage fail-closed cleaner',
     proofLabel: 'Customer status pages',
     proofHref: '/work/customer-status-pages/',
   },
   {
-    title: 'Human-in-the-loop by design',
-    body: 'Review queues, interception windows, escalation routing to the person who actually owns the answer, and feedback loops that turn corrections into training examples. Automation that people trust because they can stop it.',
+    title: 'People can always stop it',
+    body: 'Every draft lands somewhere a person can read it, change it, or kill it before a customer does. On the support agent, auto-send stayed off for the entire first rollout — on purpose. Automation earns trust by being interruptible.',
     tags: ['Review dashboards', 'Escalation', 'Slack'],
     image: assistantArchitecture,
     imageAlt: 'Retrieval architecture with escalation and feedback paths',
@@ -50,8 +45,8 @@ const capabilities = [
     proofHref: '/work/internal-knowledge-assistant/',
   },
   {
-    title: 'Full-cycle systems integration',
-    body: 'The unglamorous half of forward-deployed work: Salesforce, four internal services with three auth schemes, an API quota already at 91%, and orchestration that fails soft so a person is never stranded.',
+    title: 'The integration nobody demos',
+    body: 'Salesforce, four internal services, three different auth schemes, and an API budget with no room to spare. Plus orchestration that fails softly, so a customer is never stranded halfway through setting up their account.',
     tags: ['Salesforce', 'Next.js', 'Supabase'],
     image: onboardingOrchestrator,
     imageAlt: 'The fail-soft onboarding orchestrator',
@@ -61,26 +56,10 @@ const capabilities = [
 ];
 
 const stats = [
-  {
-    value: '2',
-    label: 'AI agents in production',
-    footnote: 'Support inbox and internal Slack',
-  },
-  {
-    value: '1,090',
-    label: 'Questions answered by the internal assistant',
-    footnote: 'Eleven weeks, Apr–Jul 2026',
-  },
-  {
-    value: '208',
-    label: 'Support emails processed',
-    footnote: 'One measured week, June 2026',
-  },
-  {
-    value: '184',
-    label: 'Automated tests across shipped repos',
-    footnote: '87 on the payments agent, 97 on the onboarding wizard',
-  },
+  { value: '4', label: 'Systems in production' },
+  { value: '1,000+', label: 'Questions answered' },
+  { value: '180+', label: 'Automated tests' },
+  { value: '4', label: 'Services integrated' },
 ];
 ---
 
@@ -97,15 +76,16 @@ const stats = [
     <div class="max-w-[1200px] mx-auto px-6 relative">
       <div class="grid md:grid-cols-2 gap-14 md:gap-12 items-center">
         <div>
-          <p class="t-eyebrow hero-seq hero-seq-1">AI Engineer · Builder · Ships to Production</p>
+          <p class="t-eyebrow hero-seq hero-seq-1">AI Engineer · Dallas, TX</p>
           <h1 class="t-display mt-4 hero-seq hero-seq-2">
             I build AI systems that <span class="gradient-text gradient-sweep"
-              >survive production</span
+              >hold up in production</span
             >.
           </h1>
           <p class="t-lede mt-6 hero-seq hero-seq-3">
-            Agents, evals, fail-closed guardrails, and the human-in-the-loop design that keeps
-            them trustworthy. Two of them run in production at FieldPulse today.
+            Four of mine run at FieldPulse right now — drafting support email, handling payment
+            notices, answering questions in Slack, and keeping customers updated on their
+            tickets.
           </p>
           <div class="mt-9 flex flex-wrap gap-4 hero-seq hero-seq-4">
             <a href="/work/" class="btn-primary">View my work</a>
@@ -125,32 +105,13 @@ const stats = [
     <div class="max-w-[1200px] mx-auto px-6">
       <SectionHeading
         eyebrow="Selected work"
-        title="Systems that stayed up"
-        lede="Six projects, in the order I'd want them read. Every number on these pages is one I can point at in a repository or a report."
+        title="Five systems in production"
+        lede="What each one does, how it is built, and what it had to get right before it could touch a customer."
         data-reveal
       />
 
       <div class="mt-12 grid md:grid-cols-2 gap-6" data-reveal-stagger>
         {caseStudies.map((entry) => <ProjectCard entry={entry} />)}
-      </div>
-
-      <div class="mt-16" data-reveal>
-        <h3 class="t-h3">More work</h3>
-        <p class="mt-3 t-body text-muted max-w-[46rem]">
-          Smaller pieces that are worth the sentence but not the case study.
-        </p>
-        <div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4" data-reveal-stagger>
-          {
-            supporting.map((p) => (
-              <SupportingCard
-                title={p.data.title}
-                blurb={p.data.blurb}
-                tags={p.data.tags}
-                link={p.data.link}
-              />
-            ))
-          }
-        </div>
       </div>
     </div>
   </section>
@@ -160,8 +121,8 @@ const stats = [
     <div class="max-w-[1200px] mx-auto px-6">
       <SectionHeading
         eyebrow="What I bring"
-        title="The parts that make an AI system survivable"
-        lede="Anyone can get a model to produce something impressive once. These are the four things that decide whether it is still working, and still trusted, six months later."
+        title="Four things that keep a system alive"
+        lede="Getting a model to do something impressive takes an afternoon. These decide whether it is still trusted six months later."
         data-reveal
       />
       <ScrollPinnedSection items={capabilities} />
@@ -169,18 +130,15 @@ const stats = [
   </section>
 
   {/* ===================== STATS ===================== */}
-  <StatsBar
-    stats={stats}
-    note="Measured numbers only. The assistant's figures come from its usage report and a hand-audit of every answer it gave in June 2026; the support agent's from a week of production traffic reviewed line by line. Where a project has targets rather than results, its case study says so."
-  />
+  <StatsBar stats={stats} />
 
   {/* ===================== CTA ===================== */}
   <section class="py-20 md:py-28">
     <div class="max-w-[1200px] mx-auto px-6 text-center" data-reveal>
-      <h2 class="t-h2">Let's build something that stays up</h2>
+      <h2 class="t-h2">Got something that has to work?</h2>
       <p class="t-lede mt-5 mx-auto max-w-[38rem]">
-        If you are putting an AI system in front of real users and want it to hold, that is the
-        work I do.
+        If you are putting an AI system in front of real users, that is the work I do. Tell me
+        what you are building and where you think it breaks.
       </p>
       <div class="mt-9 flex flex-wrap gap-4 justify-center">
         <a href="/contact/" class="btn-primary">Get in touch</a>

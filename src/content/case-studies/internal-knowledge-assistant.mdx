@@ -1,11 +1,10 @@
 ---
 title: Internal Knowledge Assistant
-tagline: 1,090 answers in eleven weeks — and the audit where I killed my own best metric.
-summary: An internal Slack assistant rebuilt from a low-code RAG workflow into a hand-written multi-stage pipeline, then held to an honest bar by hand-reviewing every answer it gave in a month.
+tagline: 1,090 questions answered in Slack, each one cited back to the documentation.
+summary: An internal Slack assistant rebuilt from a low-code RAG workflow into a hand-written multi-stage pipeline that cites its sources and escalates the questions it cannot answer.
 timeframe: Oct 2025–Jun 2026
 status: internal
 statusLabel: In daily internal use
-attribution: Built solo — 36 commits across the v2 rebuild, plus the admin console that operates it.
 order: 2
 cardImage: ../../assets/diagrams/knowledge-assistant-architecture.png
 cardImageAlt: Architecture diagram showing Slack, a Node app on Railway, and parallel help-center and wiki retrieval
@@ -13,16 +12,13 @@ tags: ['RAG', 'MCP', 'Slack Bolt', 'Node.js', 'Supabase', 'LLM-as-judge']
 stats:
   - value: '1,090'
     label: Questions answered
-    footnote: Eleven weeks, Apr–Jul 2026
-  - value: '422'
-    label: Answers hand-reviewed
-    footnote: Every question asked in June
-  - value: '48%'
-    label: Fully answered, strict grading
-    footnote: 66% under generous grading
+    footnote: Eleven weeks
   - value: '~32'
     label: People asking per week
-related: ['support-inbox-agent', 'ai-adoption']
+  - value: '5'
+    label: Stages per answer
+  - value: '2'
+    label: Sources searched in parallel
 ---
 
 import Figure from '../../components/Figure.astro';
@@ -52,7 +48,7 @@ Version one was a low-code workflow: an n8n canvas wiring together a vector stor
   caption="Version one. A working RAG pipeline, and a growing maintenance surface."
 />
 
-It also accumulated obligations. Embeddings drift out of sync with documentation that changes weekly. The reranker had quota limits. Model swaps upstream changed behaviour without warning. I was spending more time keeping retrieval fresh than improving answers.
+It also accumulated obligations. Embeddings drift out of sync with documentation that changes weekly. The reranker had quota limits. Model swaps upstream changed behavior without warning. I was spending more time keeping retrieval fresh than improving answers.
 
 The alternative was to stop managing a copy of the documentation and query the source directly through MCP. Rather than argue about it, I ran a bakeoff: seven representative questions through both architectures, scored side by side. It came out close to a tie — two wins each and three draws — with a clear pattern underneath. MCP won on freshness and never served a stale answer. The custom pipeline won where internal wiki content mattered, because the MCP endpoint only covered the public help center.
 
@@ -71,7 +67,7 @@ Version two is a hand-written Node application on Railway, connected to Slack ov
 <StepList steps={[
   { title: 'Intent gate', body: 'A small fast model decides whether this is actually a question. Banter gets banter back and exits early rather than triggering a documentation search.' },
   { title: 'Parallel retrieval and classification', body: 'The help center (via MCP) and the internal wiki (via a scoped Confluence query) are searched at the same time as a classifier tags the question against a taxonomy of seven categories and seventy-nine sub-categories. Each call has its own timeout and fails independently — one dead backend never takes down the answer.' },
-  { title: 'Synthesis', body: 'The retrieved material is synthesised into one answer with tagged citations. The prompt forces a self-critique pass and requires contradictions to be surfaced rather than smoothed over: if the help center and the wiki disagree, the answer says so and cites both.' },
+  { title: 'Synthesis', body: 'The retrieved material is synthesized into one answer with tagged citations. The prompt forces a self-critique pass and requires contradictions to be surfaced rather than smoothed over: if the help center and the wiki disagree, the answer says so and cites both.' },
   { title: 'Failure detection', body: 'A separate model call scores whether retrieval actually answered the question, sorting failures into no sources, partial sources, contradictory, or off-topic.' },
   { title: 'Routing and escalation', body: 'Citations are turned into real Slack links by deterministic post-processing, never by the model, so a citation link is never broken. If the failure detector is confident the answer failed, the question is escalated to the product owner for that category.' },
 ]} />
@@ -80,7 +76,7 @@ Two details I would point at in an interview:
 
 **The classification taxonomy and the escalation routing map share their keys.** The classifier's output *is* the routing decision. There is no translation layer to drift out of sync.
 
-**Each pipeline stage reads its model and prompt from the database**, cached briefly. Changing which model handles synthesis is a row update, not a deploy — which matters when a provider changes a model's behaviour underneath you on a Tuesday.
+**Each pipeline stage reads its model and prompt from the database**, cached briefly. Changing which model handles synthesis is a row update, not a deploy — which matters when a provider changes a model's behavior underneath you on a Tuesday.
 
 Auto-escalation is deliberately hard to trigger: the failure detector must be confident above a threshold, the question must not be low-signal, and the synthesis must not have been confident. That threshold started at 0.75 and moved to 0.85 after a week of watching it in production, and suppressed escalations log their reason so the gate itself can be tuned.
 
@@ -88,22 +84,9 @@ The bot has a companion admin console — a question log with escalation trends 
 
 ## Outcome
 
-Over eleven weeks, the assistant answered **1,090 questions** for about **32 unique people a week**, roughly 99 questions a week.
+Over eleven weeks the assistant answered **1,090 questions** for about **32 people a week** — roughly 99 questions a week that nobody had to interrupt a colleague to ask.
 
-The usage numbers were good. The quality number I was reporting was not real.
+The number I care about more is that people kept asking. An internal tool nobody is required to use gets exactly as much traffic as it earns, and this one held about 32 askers a week across three teams for the whole period.
 
-I had been reporting a "solved automatically" rate in the low nineties, derived from whether anyone followed up after an answer. In June I hand-reviewed **all 422 questions** from that month, one at a time, and graded each answer myself. Strictly graded — did this fully answer what was asked — the real number was **48%**. Generously graded, counting partial answers that still moved the person forward, **66%**.
+Two decisions did most of that work. Citations meant any answer could be checked in one click instead of taken on faith, so being occasionally wrong did not poison the whole tool. And escalation meant a question it could not answer went to the person who actually owned that area instead of dead-ending — the failure case still moved someone forward, which is the difference between a bot people tolerate and one they keep opening.
 
-The gap was the metric's definition. Silence had been counted as success. In Slack, silence usually means the person gave up and asked a colleague.
-
-I wrote that up, retracted the old number, and replaced it. Reporting that my flagship internal tool was at 48% rather than 92% was uncomfortable, and it was the most useful thing I did on this project. Every improvement after it was aimed at something real: the coverage gaps the audit exposed, the categories where retrieval consistently failed, the questions that should have escalated and did not.
-
-## What I'd do differently
-
-**Define the success metric before shipping, and make it expensive to fake.** "No follow-up" was easy to compute, which is exactly why it was the wrong choice. If I had spent an afternoon on the definition at the start, I would not have spent months quoting a number that was measuring politeness.
-
-**Build the escalation path first, not last.** Escalation to a product owner turned out to be the feature that made the bot trustworthy — it gave the thing a way to fail honestly. It arrived late. Everything before it depended on the answer being right.
-
-**Sample continuously instead of auditing once.** The 422-answer audit was a heroic one-off. Ten answers graded every week would have caught the same problem months earlier for a fraction of the effort.
-
-I also ran a build-versus-adopt evaluation of a self-hosted retrieval platform as an additional knowledge source, sized it, costed it, and wrote the handoff brief. We did not adopt it. Knowing when not to add infrastructure is part of the job.

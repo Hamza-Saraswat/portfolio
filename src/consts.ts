@@ -1,9 +1,8 @@
 export const SITE = {
   name: 'Hamza Saraswat',
   title: 'Hamza Saraswat — AI Engineer',
-  tagline: 'AI Engineer · Builder · Ships to Production',
   description:
-    'I build AI systems that survive production — agents, evals, fail-closed guardrails, and the human-in-the-loop design that keeps them trustworthy.',
+    'I build AI systems that hold up in production. Four of mine run at FieldPulse — support email, payment notices, internal knowledge, and customer status pages.',
   url: 'https://hamza-saraswat.com',
   email: 'hamza.saraswat@gmail.com',
   location: 'Dallas–Fort Worth, TX',

@@ -44,9 +44,16 @@
   to = "/work/onboarding-platform/"
   status = 301
 
+# The AI-adoption case study was folded into the other five and removed, so
+# both its old .html URL and the Astro URL it briefly held point at the index.
 [[redirects]]
   from = "/project-ai-adoption.html"
-  to = "/work/ai-adoption/"
+  to = "/work/"
+  status = 301
+
+[[redirects]]
+  from = "/work/ai-adoption/"
+  to = "/work/"
   status = 301
 
 # The Costbook pipeline was never put into production, so its case study

@@ -33,3 +33,8 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# HyperFrames render artifacts (the composition itself is committed)
+src/hero/snapshots/
+src/hero/out/
+src/hero/.hyperframes/

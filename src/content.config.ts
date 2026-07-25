@@ -1,6 +1,6 @@
-import { defineCollection, reference } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
-import { glob, file } from 'astro/loaders';
+import { glob } from 'astro/loaders';
 
 /**
  * Case studies.
@@ -40,7 +40,6 @@ const caseStudies = defineCollection({
         )
         .max(4)
         .optional(),
-      related: z.array(reference('caseStudies')).optional(),
       draft: z.boolean().default(false),
     }),
 });
@@ -63,16 +62,5 @@ const writing = defineCollection({
   }),
 });
 
-const supportingProjects = defineCollection({
-  loader: file('./src/data/supporting-projects.json'),
-  schema: z.object({
-    id: z.string(),
-    title: z.string(),
-    blurb: z.string(),
-    tags: z.array(z.string()).max(4),
-    order: z.number(),
-    link: z.url().optional(),
-  }),
-});
 
-export const collections = { caseStudies, writing, supportingProjects };
+export const collections = { caseStudies, writing };
