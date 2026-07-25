@@ -1,11 +1,10 @@
 ---
 title: Payments Operations Agent
-tagline: Payments email automation where the language model never writes the customer-facing body.
-summary: A payments-operations agent that classifies and extracts, but never composes — the reply body is copied verbatim from a template registry, making a hallucinated sentence structurally impossible.
+tagline: Ten minutes of manual work per payment notice, automated — without the model writing a word of it.
+summary: A payments-operations agent that classifies and extracts but never composes. The reply body is copied verbatim from a template registry, making a hallucinated sentence structurally impossible.
 timeframe: Mar–Jul 2026
 status: complete
 statusLabel: Complete, merged into the agent platform
-attribution: A fork of the support inbox agent, so it inherits that codebase's shared foundation. The payments-specific work is mine — 18 pull requests.
 order: 4
 cardImage: ../../assets/diagrams/payments-template-first.png
 cardImageAlt: Diagram showing an LLM classifier feeding a template registry and deterministic PII guard, never writing the reply body
@@ -21,7 +20,6 @@ stats:
   - value: '2'
     label: Hazards found and removed
     footnote: Both before any deployment
-related: ['support-inbox-agent', 'customer-status-pages']
 ---
 
 import Figure from '../../components/Figure.astro';
@@ -91,10 +89,3 @@ There is also a finding I did not expect. In live testing, a byte-identical emai
 
 It was never deployed as its own service, which was the plan changing rather than the project stalling. Instead of running a second application, it was merged back into the support agent as a second brain on one chassis: multi-inbox routing, per-agent tool authorisation, and row-level isolation per agent in the shared database. One codebase, one review dashboard, two agents that cannot see each other's data.
 
-## What I'd do differently
-
-**Get real data before writing a single fixture.** Every wrong assumption in this project came from a hand-written fixture, and every one of them was corrected by a real case. The scrubbing pipeline should have been the first thing built.
-
-**Test against production-shaped delivery from the start.** The sender finding would have been obvious in week one with a proper delivery path, instead of surfacing late in live testing.
-
-**Write down which templates may never be automated, and why, in the repository.** The reasoning for excluding bank-account-change requests lived in my head and in a design document. It belongs next to the code, as a comment on the hard-coded list, so the next person to touch it inherits the reasoning and not just the rule.

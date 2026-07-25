@@ -13,30 +13,8 @@ nothing gets stated as a measured result when it was a target.
 
 ---
 
-## 1. I Hand-Reviewed All 422 of My AI Bot's June Answers
 
-**Source:** Internal knowledge assistant · **Angle:** measurement integrity
-
-The strongest piece in the list, because almost nobody publishes this.
-
-- Open on the number I was reporting — a solve rate in the low nineties — and
-  where it came from: nobody followed up after an answer, so the answer counted
-  as good.
-- Why that is a metric measuring politeness. In Slack, silence usually means the
-  person gave up and asked a colleague instead.
-- The audit itself: every question from June, graded by hand, twice. Strict
-  grading (did this fully answer the question) gave 48%. Generous grading
-  (did it move the person forward) gave 66%.
-- Publishing the correction, and what it cost versus what it bought. The
-  uncomfortable part is real and worth being honest about.
-- What changed afterwards: the coverage gaps the audit exposed, the categories
-  where retrieval consistently failed, the questions that should have escalated.
-- Close on the cheap version anyone can run: ten answers, graded by hand, every
-  week, from week one.
-
----
-
-## 2. The LLM Never Writes the Email
+## 1. The LLM Never Writes the Email
 
 **Source:** Payments operations agent · **Angle:** architecture for high-stakes automation
 
@@ -56,7 +34,7 @@ The strongest piece in the list, because almost nobody publishes this.
 
 ---
 
-## 3. Five Stages of Fail-Closed
+## 2. Five Stages of Fail-Closed
 
 **Source:** Customer status pages · **Angle:** publishing LLM output safely
 
@@ -76,7 +54,7 @@ The strongest piece in the list, because almost nobody publishes this.
 
 ---
 
-## 4. A Second Model Decides Whether the First Gets to Send
+## 3. A Second Model Decides Whether the First Gets to Send
 
 **Source:** Support inbox agent · **Angle:** calibration
 
@@ -96,7 +74,7 @@ The strongest piece in the list, because almost nobody publishes this.
 
 ---
 
-## 5. Shipping Production Software with a Fleet of Coding Agents
+## 4. Shipping Production Software with a Fleet of Coding Agents
 
 **Source:** Onboarding platform · **Angle:** process
 
@@ -112,7 +90,7 @@ The strongest piece in the list, because almost nobody publishes this.
 
 ---
 
-## 6. The Bakeoff That Made Me Rebuild Our Bot
+## 5. The Bakeoff That Made Me Rebuild Our Bot
 
 **Source:** Internal knowledge assistant · **Angle:** architecture decisions
 
@@ -130,7 +108,7 @@ The strongest piece in the list, because almost nobody publishes this.
 
 ---
 
-## 7. Your Test Email Isn't Production
+## 6. Your Test Email Isn't Production
 
 **Source:** Payments operations agent · **Angle:** testing
 

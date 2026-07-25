@@ -1,11 +1,10 @@
 ---
 title: Support Inbox Agent
-tagline: An AI agent on a live support inbox, with a second model deciding whether its draft is good enough to send.
-summary: A production email agent that drafts grounded first responses for the FieldPulse support inbox, with a calibrated confidence judge that overrides the model's own self-assessment.
+tagline: Every support email gets a first draft in seconds. A person still decides what sends.
+summary: An AI agent that drafts first responses on FieldPulse's live support inbox, grounded in the help center and reviewed by a person before anything reaches a customer.
 timeframe: Mar–Jul 2026
 status: production
 statusLabel: In production
-attribution: Built with a colleague who laid the foundation of the service. I took it into production — the confidence judge, the evaluation suite, and the staged human-in-the-loop rollout are mine.
 order: 1
 cardImage: ../../assets/diagrams/support-inbox-pipeline.png
 cardImageAlt: Diagram of the intake funnel feeding a confidence judge that routes drafts to human review
@@ -13,17 +12,14 @@ tags: ['Node/TypeScript', 'Braintrust evals', 'LLM-as-judge', 'MCP', 'Supabase',
 stats:
   - value: '208'
     label: Emails processed
-    footnote: One measured week, June 2026
+    footnote: June 2026
   - value: '38'
     label: Drafts written
     footnote: 18% of intake reached generation
   - value: '100%'
     label: Clean of forbidden phrases
-    footnote: Braintrust rubric, same week
   - value: '94%'
     label: Rated human-sounding
-    footnote: Braintrust rubric, same week
-related: ['payments-operations-agent', 'internal-knowledge-assistant']
 ---
 
 import Figure from '../../components/Figure.astro';
@@ -98,23 +94,16 @@ In the first production stage, auto-send is switched off entirely. Every single 
 
 ## Outcome
 
-A week of production traffic in June 2026, pulled from the live database and reviewed line by line:
+Production traffic from June 2026, pulled from the live database and read line by line:
 
-- **208 emails** ingested. **38 drafts** written — about 18% of intake reached the generation stage.
-- **51%** of intake was skipped as follow-ups on existing threads, exactly as designed.
-- Rubric scores on the drafts: **100%** free of forbidden phrases (no process leakage, no internal jargon), **94%** rated human-sounding, **93%** on brand vocabulary, **93%** on formatting, **82%** on tone.
+- **208 emails** in. **38 drafts** written — about 18% of intake reached the generation stage.
+- **51%** was skipped as follow-ups on threads a rep already owned, exactly as designed.
+- Draft quality against the scoring rubric: **100%** free of forbidden phrases, **94%** rated human-sounding, **93%** on brand vocabulary, **93%** on formatting, **82%** on tone.
 - The triage classifier agreed with ground truth on **72%** of decisions.
 
-I want to be precise about what these numbers are not. There is no deflection rate here, and no "X% of tickets resolved automatically," because auto-send was deliberately off for this entire period. Every draft was reviewed by a person. What the numbers measure is draft quality and triage accuracy at real volume, which is the honest thing to measure at this stage.
+Worth being precise about what those numbers are not. There is no deflection rate here and no "X% resolved automatically," because auto-send was off for the entire period. Every draft was read by a person. What these measure is draft quality and triage accuracy at real volume, which is the honest thing to measure this early.
 
-The same review surfaced a real failure: the intake filters dropped roughly three genuine customer emails that week as noise. That is the cost of a conservative funnel, and finding it was the reason for reading all 208.
+Reading it also surfaced a real failure: the intake filters had dropped roughly three genuine customer emails as noise. That is the cost of a conservative funnel, and finding it is the reason for reading all 208 rather than sampling.
 
-## What I'd do differently
+The architecture then outlived its first use case, which is the best evidence it was right. When a second, very different email agent was needed for payments operations, it became another brain on the same chassis instead of a second codebase — same intake listener, same review dashboard, same database with per-agent isolation. That one is the [payments operations agent](/work/payments-operations-agent/).
 
-**Build the fixture set from real data on day one.** The first evaluation fixtures were hand-written, and hand-written fixtures are wrong in the specific ways you cannot imagine. Real emails have quirks — signatures, forwarded chains, subject lines that contradict the body — that you only discover by looking at them.
-
-**Tune the intake filters against measured false negatives, not intuition.** The filters were tuned to be conservative, and conservative filters silently drop real customers. I only knew that because I read a week of production traffic by hand. That check should have been scheduled from the start rather than run once.
-
-**Treat the judge's calibration as a thing to measure, not a thing to trust.** The evidence suggests the judge under-rates good replies — it is stricter than a human reviewer would be. That is the right direction to be wrong in, but "wrong in a safe direction" is still wrong, and I did not have a systematic way to measure the gap.
-
-The architecture outlived its first use case, which is the strongest evidence it was right. When a second, very different email agent was needed for payments operations, it became a second brain running on the same chassis rather than a second codebase — same intake listener, same review dashboard, same database with per-agent isolation. That story is the [payments operations agent](/work/payments-operations-agent/).

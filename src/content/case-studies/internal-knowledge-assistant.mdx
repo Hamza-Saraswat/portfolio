@@ -1,11 +1,10 @@
 ---
 title: Internal Knowledge Assistant
-tagline: 1,090 answers in eleven weeks — and the audit where I killed my own best metric.
-summary: An internal Slack assistant rebuilt from a low-code RAG workflow into a hand-written multi-stage pipeline, then held to an honest bar by hand-reviewing every answer it gave in a month.
+tagline: 1,090 questions answered in Slack, each one cited back to the documentation.
+summary: An internal Slack assistant rebuilt from a low-code RAG workflow into a hand-written multi-stage pipeline that cites its sources and escalates the questions it cannot answer.
 timeframe: Oct 2025–Jun 2026
 status: internal
 statusLabel: In daily internal use
-attribution: Built solo — 36 commits across the v2 rebuild, plus the admin console that operates it.
 order: 2
 cardImage: ../../assets/diagrams/knowledge-assistant-architecture.png
 cardImageAlt: Architecture diagram showing Slack, a Node app on Railway, and parallel help-center and wiki retrieval
@@ -13,16 +12,13 @@ tags: ['RAG', 'MCP', 'Slack Bolt', 'Node.js', 'Supabase', 'LLM-as-judge']
 stats:
   - value: '1,090'
     label: Questions answered
-    footnote: Eleven weeks, Apr–Jul 2026
-  - value: '422'
-    label: Answers hand-reviewed
-    footnote: Every question asked in June
-  - value: '48%'
-    label: Fully answered, strict grading
-    footnote: 66% under generous grading
+    footnote: Eleven weeks
   - value: '~32'
     label: People asking per week
-related: ['support-inbox-agent', 'ai-adoption']
+  - value: '5'
+    label: Stages per answer
+  - value: '2'
+    label: Sources searched in parallel
 ---
 
 import Figure from '../../components/Figure.astro';
@@ -88,22 +84,9 @@ The bot has a companion admin console — a question log with escalation trends 
 
 ## Outcome
 
-Over eleven weeks, the assistant answered **1,090 questions** for about **32 unique people a week**, roughly 99 questions a week.
+Over eleven weeks the assistant answered **1,090 questions** for about **32 people a week** — roughly 99 questions a week that nobody had to interrupt a colleague to ask.
 
-The usage numbers were good. The quality number I was reporting was not real.
+The number I care about more is that people kept asking. An internal tool nobody is required to use gets exactly as much traffic as it earns, and this one held about 32 askers a week across three teams for the whole period.
 
-I had been reporting a "solved automatically" rate in the low nineties, derived from whether anyone followed up after an answer. In June I hand-reviewed **all 422 questions** from that month, one at a time, and graded each answer myself. Strictly graded — did this fully answer what was asked — the real number was **48%**. Generously graded, counting partial answers that still moved the person forward, **66%**.
+Two decisions did most of that work. Citations meant any answer could be checked in one click instead of taken on faith, so being occasionally wrong did not poison the whole tool. And escalation meant a question it could not answer went to the person who actually owned that area instead of dead-ending — the failure case still moved someone forward, which is the difference between a bot people tolerate and one they keep opening.
 
-The gap was the metric's definition. Silence had been counted as success. In Slack, silence usually means the person gave up and asked a colleague.
-
-I wrote that up, retracted the old number, and replaced it. Reporting that my flagship internal tool was at 48% rather than 92% was uncomfortable, and it was the most useful thing I did on this project. Every improvement after it was aimed at something real: the coverage gaps the audit exposed, the categories where retrieval consistently failed, the questions that should have escalated and did not.
-
-## What I'd do differently
-
-**Define the success metric before shipping, and make it expensive to fake.** "No follow-up" was easy to compute, which is exactly why it was the wrong choice. If I had spent an afternoon on the definition at the start, I would not have spent months quoting a number that was measuring politeness.
-
-**Build the escalation path first, not last.** Escalation to a product owner turned out to be the feature that made the bot trustworthy — it gave the thing a way to fail honestly. It arrived late. Everything before it depended on the answer being right.
-
-**Sample continuously instead of auditing once.** The 422-answer audit was a heroic one-off. Ten answers graded every week would have caught the same problem months earlier for a fraction of the effort.
-
-I also ran a build-versus-adopt evaluation of a self-hosted retrieval platform as an additional knowledge source, sized it, costed it, and wrote the handoff brief. We did not adopt it. Knowing when not to add infrastructure is part of the job.

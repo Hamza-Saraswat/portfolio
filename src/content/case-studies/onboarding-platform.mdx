@@ -1,11 +1,10 @@
 ---
 title: Customer Onboarding Platform
-tagline: Salesforce closed-won to a configured account, self-serve, with an orchestrator that never strands the customer.
+tagline: New customers set up their own account instead of waiting on a specialist.
 summary: A guided setup wizard that provisions real FieldPulse accounts across four internal services, built so a downstream failure leaves an audit row for an operator rather than a dead end for the customer.
 timeframe: Mar–Jul 2026
 status: production
 statusLabel: In production
-attribution: Three repositories. I led development on the wizard (86 of 107 commits, alongside the PM who owns the product), and built the link-generation API and the analytics dashboard.
 order: 5
 cardImage: ../../assets/diagrams/onboarding-orchestrator.png
 cardImageAlt: Diagram of the fail-soft orchestrator fanning out to nine service calls with audit rows for failures
@@ -21,7 +20,6 @@ stats:
     footnote: Wizard, link API, analytics dashboard
   - value: '0'
     label: Failures that block a customer
-related: ['ai-adoption', 'customer-status-pages']
 ---
 
 import Figure from '../../components/Figure.astro';
@@ -95,10 +93,3 @@ What I will not claim: this project has been reported internally against targets
 
 There was also a version of this that never shipped. An earlier prototype built the same wizard with stubbed API calls that returned mock success, and it was deliberately thrown away. It answered the questions that mattered — module sequence, session model, what the flow felt like — before anyone wrote a real integration. The prototype was the cheapest part of the project and it de-risked the expensive part.
 
-## What I'd do differently
-
-**Reconcile schema drift automatically.** Repository migrations and the deployed database drifted apart, and reconciling them by hand was tedious and error-prone. A check in the pipeline comparing the two would have caught it the day it happened.
-
-**Give operators a real interface to the failure queue sooner.** Fail-soft is only as good as the process that drains the queue. Audit rows shipped well before anything designed for reading them, which for a while meant the safety net depended on someone running a query.
-
-**Instrument for outcomes at launch, not after.** The dashboard measures the funnel — where sessions stall, which jobs fail. It does not measure whether onboarding got faster than the manual process it replaced, because nobody captured a clean baseline before the change. That is why this page has no before-and-after number, and it is the thing I would fix first.

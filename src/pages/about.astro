@@ -5,57 +5,10 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import { SITE } from '../consts';
 
-const experience = [
-  {
-    role: 'AI Workflow Specialist',
-    org: 'FieldPulse',
-    note: 'Contract',
-    period: 'Oct 2025 — Present',
-    bullets: [
-      'Took an email support agent into production on the live support inbox — calibrated confidence judging, an automated evaluation suite, and a staged human-in-the-loop rollout.',
-      'Built an internal Slack assistant that answered 1,090 questions in eleven weeks, then hand-audited every answer from a month to replace a metric that was overstating it.',
-      'Led development of a customer onboarding platform now in production: a self-serve wizard, a Salesforce-facing API, and an analytics dashboard across three repositories.',
-      'Established the evaluation and guardrail patterns the team now reuses — golden fixtures, adversarial gate tests, shadow runs, and fail-closed output pipelines.',
-    ],
-  },
-  {
-    role: 'Founder',
-    org: 'Digital Vault Solutions',
-    note: 'Self-employed',
-    period: 'May 2025 — Present',
-    bullets: [
-      'Consulting and content on agentic AI development, focused on getting LLM systems past the demo stage.',
-    ],
-  },
-  {
-    role: 'AI Specialist',
-    org: 'MindPropel',
-    note: 'Contract',
-    period: 'Dec 2024 — Jul 2025',
-    bullets: [
-      'Built automation workflows in n8n for content distribution and internal operations.',
-      'Shipped a full-stack web application backed by n8n and Supabase.',
-    ],
-  },
-  {
-    role: 'Digital Marketing Coordinator',
-    org: 'IslaminSpanish',
-    period: 'Jun 2024 — Dec 2024',
-    bullets: [],
-  },
-];
-
-const earlier = [
-  { role: 'Social Media Manager', org: 'Between The Lines Sports', period: 'Aug 2023 — Jun 2024' },
-  { role: 'AI Systems Trainer', org: 'Scale AI', period: 'Aug 2023 — Jan 2024' },
-  { role: 'Marketing Expert', org: 'Genpact', period: 'Jun 2022 — Dec 2022' },
-  { role: 'Freelance Writer', org: 'Upwork', period: 'Aug 2019 — Jul 2022' },
-];
-
 const capabilities = [
   {
     title: 'Evaluation and measurement',
-    tools: ['Braintrust', 'LLM-as-judge', 'Golden fixtures', 'Shadow runs', 'Adversarial tests'],
+    tools: ['Braintrust', 'LLM-as-judge', 'Golden fixtures', 'Regression tests'],
   },
   {
     title: 'Agents and retrieval',
@@ -70,6 +23,7 @@ const capabilities = [
     tools: ['Salesforce', 'Slack', 'Railway', 'Vercel', 'Vitest', 'Claude Code'],
   },
 ];
+
 /**
  * Headshot is optional and drop-in: save an image at
  * src/assets/headshot.(jpg|jpeg|png|webp) and it appears here, sized and
@@ -85,7 +39,7 @@ const headshot = Object.values(headshotFiles)[0]?.default;
 
 <BaseLayout
   title="About"
-  description="AI engineer in Dallas–Fort Worth. I take LLM systems past the demo stage and into production, with the evaluation and guardrails that keep them trustworthy."
+  description="AI engineer in Dallas–Fort Worth. I build AI systems that run in production, with the evaluation and guardrails that keep them trustworthy."
 >
   <section class="pt-16 pb-14 md:pt-24 md:pb-20">
     <div class="max-w-[1200px] mx-auto px-6">
@@ -104,34 +58,27 @@ const headshot = Object.values(headshotFiles)[0]?.default;
         }
         <p class="t-eyebrow">About</p>
         <h1 class="t-display mt-4">
-          I take AI systems <span class="gradient-text">past the demo stage</span>.
+          I work on the part <span class="gradient-text">after the demo</span>.
         </h1>
 
         <div class="mt-8 space-y-5 t-body">
           <p>
-            I am an AI engineer at FieldPulse, a field service management platform in Dallas. Two
-            of the systems I work on run in production: an agent that drafts first responses on
-            the live support inbox, and an internal assistant that answers product questions in
-            Slack.
+            I build AI systems at FieldPulse, a field service management platform in Dallas. Four
+            of them are in production: an agent drafting support email, one handling payment
+            notices, an assistant answering product questions in Slack, and the pipeline behind
+            our customer status pages.
           </p>
           <p>
-            The work I care about is the part after the prototype works. Getting a model to
-            produce something impressive is a demo. Knowing what it does on the day the retrieval
-            comes back empty, or the upstream provider changes a model underneath you, or the
-            output is about to reach a customer who will act on it — that is the engineering, and
-            it is most of the job.
+            Getting a model to produce something impressive is a demo. Knowing what it does on
+            the day retrieval comes back empty, or the provider changes a model underneath you,
+            or the output is about to reach a customer who will act on it — that is the
+            engineering, and it is most of the job.
           </p>
           <p>
-            I came to this from journalism, by way of marketing and automation work. That is a
-            strange path into engineering and it turns out to be a useful one: most of what makes
-            an AI system trustworthy is about evidence, sourcing, and being honest about what you
-            actually know. I have retracted my own metric on a public dashboard, and I would do it
-            again.
-          </p>
-          <p>
-            I also run a small consulting practice, Digital Vault Solutions, and I use Claude Code
-            heavily — including fleets of parallel agents for production work, which only works
-            when the tests and the review gate are real.
+            I came into this through marketing and automation work, building n8n workflows before
+            I was building agents. The through-line is the same: work out what a process actually
+            does, then make the repetitive part run itself without anyone having to trust it
+            blindly.
           </p>
         </div>
 
@@ -145,65 +92,6 @@ const headshot = Object.values(headshotFiles)[0]?.default;
   </section>
 
   <section class="py-16 md:py-24 bg-surface border-t border-border">
-    <div class="max-w-[1200px] mx-auto px-6">
-      <div class="prose-column">
-        <SectionHeading eyebrow="Career" title="Experience" data-reveal />
-
-        <div class="mt-10 space-y-10">
-          {
-            experience.map((job) => (
-              <div data-reveal>
-                <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <h3 class="font-semibold text-charcoal text-lg">
-                    {job.role}
-                    <span class="text-muted font-normal"> · {job.org}</span>
-                  </h3>
-                  <span class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
-                    {job.period}
-                  </span>
-                </div>
-                {job.note && <p class="mt-1 text-sm text-muted">{job.note}</p>}
-                {job.bullets.length > 0 && (
-                  <ul class="mt-4 space-y-2.5">
-                    {job.bullets.map((b) => (
-                      <li class="t-body text-[0.9375rem] pl-5 relative">
-                        <span
-                          class="absolute left-0 top-[0.6em] w-1.5 h-1.5 rounded-full bg-accent-border"
-                          aria-hidden="true"
-                        />
-                        {b}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            ))
-          }
-        </div>
-
-        <div class="mt-12 pt-8 border-t border-border" data-reveal>
-          <h3 class="font-mono text-[11px] uppercase tracking-[0.08em] text-muted mb-5">
-            Earlier
-          </h3>
-          <ul class="space-y-3">
-            {
-              earlier.map((job) => (
-                <li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                  <span class="text-charcoal">
-                    {job.role}
-                    <span class="text-muted"> · {job.org}</span>
-                  </span>
-                  <span class="font-mono text-[11px] text-muted">{job.period}</span>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="py-16 md:py-24">
     <div class="max-w-[1200px] mx-auto px-6">
       <div class="prose-column">
         <SectionHeading eyebrow="Toolkit" title="What I work with" data-reveal />
@@ -227,13 +115,13 @@ const headshot = Object.values(headshotFiles)[0]?.default;
             Education
           </h3>
           <p class="text-charcoal font-medium">University of Texas at Arlington</p>
-          <p class="text-sm text-muted mt-1">Bachelor of Arts in Journalism · May 2022</p>
+          <p class="text-sm text-muted mt-1">Bachelor of Arts · May 2022</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="py-16 bg-surface border-t border-border">
+  <section class="py-16 border-t border-border">
     <div class="max-w-[1200px] mx-auto px-6 text-center" data-reveal>
       <h2 class="t-h2">Want to talk?</h2>
       <p class="t-lede mt-5 mx-auto max-w-[38rem]">

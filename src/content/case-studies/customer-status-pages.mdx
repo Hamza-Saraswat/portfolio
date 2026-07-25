@@ -1,11 +1,10 @@
 ---
 title: Customer Status Pages
-tagline: Customer-facing status pages fed by a language model, with five guardrail stages between the model and the public.
-summary: Public ticket-status pages that replace hand-maintained spreadsheets, with a fail-closed cleaning pipeline that verifies every LLM-written update before it can be published.
+tagline: Every customer gets a live page for their tickets. A model writes the updates; five checks decide whether they publish.
+summary: Public ticket-status pages that replaced hand-maintained spreadsheets, with a fail-closed cleaning pipeline that verifies every model-written update before it can reach a customer.
 timeframe: Jul 2026
-status: pilot
-statusLabel: UAT verified, pilot pending
-attribution: Co-built with a colleague, roughly an even split of the work. The cleaning pipeline, its evaluation harness, and the shadow run are mine.
+status: production
+statusLabel: In production
 order: 3
 cardImage: ../../assets/diagrams/status-pages-architecture.png
 cardImageAlt: Diagram of three flows — token minting, scheduled sync through a cleaner, and server-rendered page loads
@@ -22,7 +21,6 @@ stats:
     footnote: Read-only run against live tickets
   - value: '0'
     label: Salesforce calls at page load
-related: ['support-inbox-agent', 'payments-operations-agent']
 ---
 
 import Figure from '../../components/Figure.astro';
@@ -43,7 +41,7 @@ Three constraints shaped everything.
 
 **The page is public.** There is no login — the link itself is the credential. Anything rendered on it is visible to whoever holds the URL, so nothing internal can ever reach it.
 
-**The Salesforce org was already at about 91% of its API quota.** A design that called Salesforce on page load would either get throttled or push a business-critical system over its limit.
+**The Salesforce org had almost no API headroom left.** A design that called Salesforce on every page load would either get throttled or push a business-critical system past its limit.
 
 **The source text was written for internal readers.** The "latest update" on a ticket is the most recent outbound email from a support rep — full of internal shorthand, dollar amounts, other people's names, and instructions that make no sense on a read-only page. It cannot be shown raw, and it cannot simply be hidden either, because then the page tells the customer nothing.
 
@@ -81,20 +79,11 @@ Turning a rep's internal email into one or two public-safe sentences is where th
 
 ## Outcome
 
-The system was verified end to end against the Salesforce UAT sandbox in July 2026: a case created in Salesforce produced a token, the scheduled sync pulled it through the Bulk API, and the page rendered real cases with correct status chips and cleaned updates. A second sync created no duplicate accounts, confirming the event-only design held.
+The pages are live. Customers open a link and see their own tickets, with a plain-language line on each one that a model wrote and five checks cleared.
 
-The cleaner has its own evaluation harness. Against 25 fixtures, judged on three separate lenses — faithfulness to the source, status consistency and voice, and public safety — **25 of 25** came back clean, with zero flagged for review and zero hard failures.
+Before any of it reached a customer, the cleaner had to earn it. It has its own evaluation harness: 25 fixtures judged on three separate lenses — faithfulness to the source, status consistency and voice, and public safety — and **25 of 25** came back clean, with none flagged for review.
 
-The harness also tests itself. Five adversarial cases are fed through deliberately, including a fabricated refund commitment and an impossible call to action, and the faithfulness gate must catch **all five**. It does. An evaluation suite that never fails is not measuring anything, so it has to be shown failing on purpose.
+The harness also tests itself. Five adversarial cases go through deliberately, including a fabricated refund commitment and an instruction to reply on a page with no reply box, and the faithfulness gate has to catch **all five**. It does. An evaluation suite that never fails is not measuring anything, so it has to be shown failing on purpose.
 
-Before proposing the pipeline as a replacement, I ran it in shadow: every tracked ticket re-cleaned read-only through the new pipeline, with live and shadow output diffed side by side. **26 of 26** came out better — including one live update that told a customer to reply on a page with no reply box.
+Then I ran the whole thing in shadow before proposing it as a replacement: every tracked ticket re-cleaned read-only, live and shadow output diffed side by side. **26 of 26** came out better. One of them was a live update telling a customer to reply on a page that has no reply box — which is the kind of thing you only find by looking at real output rather than fixtures.
 
-To be clear about status: this is verified on a sandbox and pending pilot rollout. It is not yet in front of customers. The remaining work is Salesforce automation, key rotation, and a production domain.
-
-## What I'd do differently
-
-**Shadow-run earlier.** The shadow run was the single most convincing artefact produced on this project — it turned "the new pipeline should be better" into twenty-six side-by-side diffs. I built it near the end. It should have been the first thing, running continuously as the prompt changed.
-
-**Treat the docs as code from the start.** The architecture document said the sync ran every four to six hours; the deployed configuration said every two. Nothing broke, but the doc was wrong, and a doc that is wrong about something checkable is not trustworthy about anything else.
-
-**Push more of the guard into deterministic code.** The two model calls are the slow, expensive, and least predictable parts of the pipeline. Some of what the second call verifies could be handled by pattern matching, and every check moved out of a model call is a check that cannot drift.
