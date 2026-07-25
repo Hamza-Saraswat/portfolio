@@ -48,7 +48,7 @@ Version one was a low-code workflow: an n8n canvas wiring together a vector stor
   caption="Version one. A working RAG pipeline, and a growing maintenance surface."
 />
 
-It also accumulated obligations. Embeddings drift out of sync with documentation that changes weekly. The reranker had quota limits. Model swaps upstream changed behaviour without warning. I was spending more time keeping retrieval fresh than improving answers.
+It also accumulated obligations. Embeddings drift out of sync with documentation that changes weekly. The reranker had quota limits. Model swaps upstream changed behavior without warning. I was spending more time keeping retrieval fresh than improving answers.
 
 The alternative was to stop managing a copy of the documentation and query the source directly through MCP. Rather than argue about it, I ran a bakeoff: seven representative questions through both architectures, scored side by side. It came out close to a tie — two wins each and three draws — with a clear pattern underneath. MCP won on freshness and never served a stale answer. The custom pipeline won where internal wiki content mattered, because the MCP endpoint only covered the public help center.
 
@@ -67,7 +67,7 @@ Version two is a hand-written Node application on Railway, connected to Slack ov
 <StepList steps={[
   { title: 'Intent gate', body: 'A small fast model decides whether this is actually a question. Banter gets banter back and exits early rather than triggering a documentation search.' },
   { title: 'Parallel retrieval and classification', body: 'The help center (via MCP) and the internal wiki (via a scoped Confluence query) are searched at the same time as a classifier tags the question against a taxonomy of seven categories and seventy-nine sub-categories. Each call has its own timeout and fails independently — one dead backend never takes down the answer.' },
-  { title: 'Synthesis', body: 'The retrieved material is synthesised into one answer with tagged citations. The prompt forces a self-critique pass and requires contradictions to be surfaced rather than smoothed over: if the help center and the wiki disagree, the answer says so and cites both.' },
+  { title: 'Synthesis', body: 'The retrieved material is synthesized into one answer with tagged citations. The prompt forces a self-critique pass and requires contradictions to be surfaced rather than smoothed over: if the help center and the wiki disagree, the answer says so and cites both.' },
   { title: 'Failure detection', body: 'A separate model call scores whether retrieval actually answered the question, sorting failures into no sources, partial sources, contradictory, or off-topic.' },
   { title: 'Routing and escalation', body: 'Citations are turned into real Slack links by deterministic post-processing, never by the model, so a citation link is never broken. If the failure detector is confident the answer failed, the question is escalated to the product owner for that category.' },
 ]} />
@@ -76,7 +76,7 @@ Two details I would point at in an interview:
 
 **The classification taxonomy and the escalation routing map share their keys.** The classifier's output *is* the routing decision. There is no translation layer to drift out of sync.
 
-**Each pipeline stage reads its model and prompt from the database**, cached briefly. Changing which model handles synthesis is a row update, not a deploy — which matters when a provider changes a model's behaviour underneath you on a Tuesday.
+**Each pipeline stage reads its model and prompt from the database**, cached briefly. Changing which model handles synthesis is a row update, not a deploy — which matters when a provider changes a model's behavior underneath you on a Tuesday.
 
 Auto-escalation is deliberately hard to trigger: the failure detector must be confident above a threshold, the question must not be low-signal, and the synthesis must not have been confident. That threshold started at 0.75 and moved to 0.85 after a week of watching it in production, and suppressed escalations log their reason so the gate itself can be tuned.
 

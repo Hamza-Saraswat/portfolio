@@ -46,10 +46,10 @@ The naive design — run the calls, throw on failure, show an error — is the w
 <Figure
   src={onboardingFlow}
   alt="Onboarding flow from Salesforce closed-won through the wizard modules to a configured account"
-  caption="Closed-won in Salesforce produces a personalised link. The customer never sees a login screen."
+  caption="Closed-won in Salesforce produces a personalized link. The customer never sees a login screen."
 />
 
-The flow starts in Salesforce. When a deal closes, an automation calls a small API that mints a session and returns a personalised link. The customer opens it, the token is exchanged for a session cookie, and they walk through the setup modules — each one checkpointing to the database as they go, so a closed tab is not a lost afternoon.
+The flow starts in Salesforce. When a deal closes, an automation calls a small API that mints a session and returns a personalized link. The customer opens it, the token is exchanged for a session cookie, and they walk through the setup modules — each one checkpointing to the database as they go, so a closed tab is not a lost afternoon.
 
 Then they press Complete Setup, and the interesting part runs.
 

@@ -45,7 +45,7 @@ The design inverts the usual arrangement:
 
 > The language model never writes the customer-facing body.
 
-The model does exactly two jobs. It picks a template, and it extracts field values. It returns strict JSON with no prose in it at all. The body of the reply is then copied **verbatim** from a template registry, with the extracted values substituted into labelled blanks.
+The model does exactly two jobs. It picks a template, and it extracts field values. It returns strict JSON with no prose in it at all. The body of the reply is then copied **verbatim** from a template registry, with the extracted values substituted into labeled blanks.
 
 A hallucinated sentence is not unlikely under this design. It is structurally impossible — there is no code path where model-generated prose reaches a customer.
 
@@ -85,7 +85,7 @@ Two hazards were found and removed before anything shipped, both inherited from 
 
 **Slack alerts were posting the raw notice.** The first 280 characters of the source, which routinely contain internal identifiers and customer names. Alerts now carry only merchant, template, tier, and reason — and a test greps the alert payload to keep it that way.
 
-There is also a finding I did not expect. In live testing, a byte-identical email body classified differently depending only on the sender address. Sender is a load-bearing classification signal, which means a self-sent test email cannot reproduce production behaviour — and the failure mode was safe (it routed to review rather than drafting), which is the only reason it was a finding rather than an incident.
+There is also a finding I did not expect. In live testing, a byte-identical email body classified differently depending only on the sender address. Sender is a load-bearing classification signal, which means a self-sent test email cannot reproduce production behavior — and the failure mode was safe (it routed to review rather than drafting), which is the only reason it was a finding rather than an incident.
 
-It was never deployed as its own service, which was the plan changing rather than the project stalling. Instead of running a second application, it was merged back into the support agent as a second brain on one chassis: multi-inbox routing, per-agent tool authorisation, and row-level isolation per agent in the shared database. One codebase, one review dashboard, two agents that cannot see each other's data.
+It was never deployed as its own service, which was the plan changing rather than the project stalling. Instead of running a second application, it was merged back into the support agent as a second brain on one chassis: multi-inbox routing, per-agent tool authorization, and row-level isolation per agent in the shared database. One codebase, one review dashboard, two agents that cannot see each other's data.
 

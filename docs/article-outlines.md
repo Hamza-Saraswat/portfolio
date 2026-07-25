@@ -84,7 +84,7 @@ nothing gets stated as a measured result when it was a target.
 - The claim people expect — this makes you faster — and the more useful one:
   it makes your test suite and your review gate load-bearing in a way they
   were not before.
-- What made tickets safe to parallelise, and what did not.
+- What made tickets safe to parallelize, and what did not.
 - Where it went wrong, and what that cost.
 - Honest accounting of what still needed a human.
 
@@ -115,7 +115,7 @@ nothing gets stated as a measured result when it was a target.
 - The finding: a byte-identical email body classified differently depending only
   on the sender address.
 - Why sender turned out to be a load-bearing signal, and why that is reasonable
-  behaviour rather than a bug.
+  behavior rather than a bug.
 - The consequence: self-sent test messages cannot reproduce the thing you are
   trying to verify, and every test that passed that way proved nothing.
 - The failure mode was safe — it routed to review rather than drafting — which

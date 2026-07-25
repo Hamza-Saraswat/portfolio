@@ -70,8 +70,8 @@ Security is structural rather than procedural: the database has row-level securi
 Turning a rep's internal email into one or two public-safe sentences is where the risk concentrates. Every stage fails closed — if anything goes wrong, the page falls back to a safe generic line rather than publishing something unverified.
 
 <StepList steps={[
-  { title: 'Cut the quoted history', body: 'Thread history is stripped before the model sees it, so a question from three weeks ago cannot bleed into a card labelled "latest update."' },
-  { title: 'Generate', body: 'The model rewrites the update in a specified voice, with internal jargon banned, and with the rule that it must sanitise rather than suppress: an email about an $18.40 payment mismatch becomes a note about a small mismatch we asked the customer to confirm. Useful, but with the number gone.' },
+  { title: 'Cut the quoted history', body: 'Thread history is stripped before the model sees it, so a question from three weeks ago cannot bleed into a card labeled "latest update."' },
+  { title: 'Generate', body: 'The model rewrites the update in a specified voice, with internal jargon banned, and with the rule that it must sanitize rather than suppress: an email about an $18.40 payment mismatch becomes a note about a small mismatch we asked the customer to confirm. Useful, but with the number gone.' },
   { title: 'Scrub for sensitive values', body: 'Deterministic pattern matching over the output, not the input — dollar amounts, email addresses, phone numbers.' },
   { title: 'Ban impossible calls to action', body: 'The page is read-only. Any update telling the customer to "reply here" is pointing at a reply box that does not exist, so those are rejected outright.' },
   { title: 'Verify, then publish', body: 'A second model call checks the rewritten update against the source email and confirms it claims nothing the source did not say. If this check cannot complete, the update does not publish.' },
