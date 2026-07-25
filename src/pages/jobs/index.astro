@@ -40,7 +40,9 @@ const picks = jobs
 
 const tracked = [...jobs].sort(
   (a, b) =>
-    STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || b.dateAdded.localeCompare(a.dateAdded)
+    STATUS_ORDER[a.status] - STATUS_ORDER[b.status] ||
+    b.dateAdded.localeCompare(a.dateAdded) ||
+    a.company.localeCompare(b.company)
 );
 
 const applied = jobs.filter((job) => job.status === 'applied').length;
